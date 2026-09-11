@@ -2,9 +2,20 @@ import { redirect } from 'next/navigation';
 import { getSlotlyUser } from '@/lib/auth';
 import SignInPage from '@/components/sign-in-page';
 
-export default async function SignIn() {
+const errors: Record<string, string> = {
+  google_not_configured: 'Login Gmail belum dikonfigurasi oleh administrator.',
+  google_cancelled: 'Proses masuk dengan Gmail dibatalkan atau kedaluwarsa.',
+  google_failed: 'Login Gmail belum berhasil. Silakan coba kembali.',
+};
+
+export default async function SignIn({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string }>;
+}) {
   const user = await getSlotlyUser();
   if (user) redirect('/dashboard');
 
-  return <SignInPage />;
+  const code = (await searchParams).error ?? '';
+  return <SignInPage initialError={errors[code] ?? ''} />;
 }
