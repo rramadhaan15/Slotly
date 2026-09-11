@@ -1,4 +1,5 @@
-import Slotly from '@/components/slotly';
+import LandingPage from '@/components/landing-page';
+
 export default function Home() {
-  return <Slotly />;
+  return <LandingPage />;
 }

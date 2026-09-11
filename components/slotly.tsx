@@ -150,7 +150,9 @@ export default function Slotly() {
     window.history.replaceState(
       {},
       '',
-      name === 'Jelajahi' ? '/' : '/?view=' + encodeURIComponent(name),
+      name === 'Jelajahi'
+        ? '/dashboard'
+        : '/dashboard?view=' + encodeURIComponent(name),
     );
   };
   useEffect(() => {
