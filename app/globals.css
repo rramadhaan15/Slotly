@@ -107,6 +107,10 @@ svg {
   padding: 24px 18px 16px;
   background: #fff;
 }
+.app-sidebar[data-slot='sidebar-container'] {
+  border-right-color: #edf1ee;
+  box-shadow: 8px 0 24px rgba(34, 52, 43, 0.025);
+}
 .app-sidebar [data-slot='sidebar-header'],
 .app-sidebar [data-slot='sidebar-footer'] {
   padding: 0;

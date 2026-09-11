@@ -48,8 +48,30 @@ function fail(error: unknown) {
 }
 export async function GET(request: Request) {
   try {
-    const db = database();
     const url = new URL(request.url);
+    const user = await getChatGPTUser();
+
+    // The public landing page must remain usable without a D1 binding. In local
+    // development (and for signed-out visitors) the built-in catalog is all we
+    // need, so avoid touching the database until an authenticated request needs
+    // account or merchant data.
+    if (!user && !url.searchParams.has('venue'))
+      return reply({
+        venues,
+        user: null,
+        bookings: [],
+        favorites: [],
+        notifications: [],
+        merchant: null,
+        merchantBookings: [],
+        isAdmin: false,
+        applications: [],
+        transactions: [],
+        commission: 5,
+        reviewed: [],
+      });
+
+    const db = database();
     const list = await catalog(db);
     if (url.searchParams.has('venue')) {
       const venue = list.find((v) => v.id === url.searchParams.get('venue'));
@@ -64,7 +86,6 @@ export async function GET(request: Request) {
         .all();
       return reply({ slots: results });
     }
-    const user = await getChatGPTUser();
     if (!user)
       return reply({
         venues: list,
