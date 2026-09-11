@@ -1,7 +1,6 @@
 import { env } from 'cloudflare:workers';
 import { createSession, sessionCookie } from '@/lib/auth';
 import { database } from '@/lib/db';
-import { hashPassword } from '@/lib/password';
 
 type GoogleProfile = {
   sub?: string;
@@ -22,23 +21,11 @@ function clearOauthCookie(name: string, secure: boolean) {
   return `${name}=; Path=/api/auth/google; HttpOnly; SameSite=Lax; Max-Age=0${secure ? '; Secure' : ''}`;
 }
 
-function signInError(origin: string, code: string) {
-  return Response.redirect(new URL(`/signin?error=${code}`, origin), 302);
-}
-
-async function availableUsername(db: D1Database, name: string, email: string) {
-  const cleaned = (name || email.split('@')[0] || 'teman-slotly')
-    .normalize('NFKD')
-    .replace(/[^\p{L}\p{N}_. -]/gu, '')
-    .trim()
-    .slice(0, 32) || 'teman-slotly';
-  for (let attempt = 0; attempt < 10; attempt++) {
-    const suffix = attempt ? `-${crypto.randomUUID().slice(0, 5)}` : '';
-    const candidate = `${cleaned.slice(0, 40 - suffix.length)}${suffix}`;
-    const used = await db.prepare('SELECT id FROM users WHERE username=?').bind(candidate).first();
-    if (!used) return candidate;
-  }
-  return `slotly-${crypto.randomUUID().slice(0, 8)}`;
+function signInError(origin: string, code: string, secure = false) {
+  const response = Response.redirect(new URL(`/signin?error=${code}`, origin), 302);
+  response.headers.append('Set-Cookie', clearOauthCookie('slotly_google_state', secure));
+  response.headers.append('Set-Cookie', clearOauthCookie('slotly_google_verifier', secure));
+  return response;
 }
 
 export async function GET(request: Request) {
@@ -50,14 +37,14 @@ export async function GET(request: Request) {
   const expectedState = cookieValue(request, 'slotly_google_state');
   const verifier = cookieValue(request, 'slotly_google_verifier');
   if (!code || !state || !expectedState || state !== expectedState || !verifier)
-    return signInError(origin, 'google_cancelled');
+    return signInError(origin, 'google_cancelled', secure);
 
   const config = env as unknown as {
     GOOGLE_CLIENT_ID?: string;
     GOOGLE_CLIENT_SECRET?: string;
   };
   if (!config.GOOGLE_CLIENT_ID || !config.GOOGLE_CLIENT_SECRET)
-    return signInError(origin, 'google_not_configured');
+    return signInError(origin, 'google_not_configured', secure);
 
   try {
     const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
@@ -87,7 +74,9 @@ export async function GET(request: Request) {
     const email = profile.email.toLowerCase();
     const db = database();
     const linked = await db
-      .prepare("SELECT user_id FROM oauth_accounts WHERE provider='google' AND provider_user_id=?")
+      .prepare(
+        "SELECT oauth_accounts.user_id FROM oauth_accounts JOIN users ON users.id=oauth_accounts.user_id WHERE oauth_accounts.provider='google' AND oauth_accounts.provider_user_id=?",
+      )
       .bind(profile.sub)
       .first<{ user_id: string }>();
     let userId = linked?.user_id;
@@ -95,15 +84,7 @@ export async function GET(request: Request) {
     if (!userId) {
       const existing = await db.prepare('SELECT id FROM users WHERE email=?').bind(email).first<{ id: string }>();
       userId = existing?.id;
-      if (!userId) {
-        userId = crypto.randomUUID();
-        const username = await availableUsername(db, profile.name ?? '', email);
-        const password = await hashPassword(crypto.randomUUID() + crypto.randomUUID());
-        await db
-          .prepare('INSERT INTO users(id,username,email,password_hash,password_salt,created_at) VALUES(?,?,?,?,?,?)')
-          .bind(userId, username, email, password.hash, password.salt, Math.floor(Date.now() / 1000))
-          .run();
-      }
+      if (!userId) return signInError(origin, 'google_account_not_found', secure);
       await db
         .prepare("INSERT OR IGNORE INTO oauth_accounts(provider,provider_user_id,user_id,created_at) VALUES('google',?,?,?)")
         .bind(profile.sub, userId, Math.floor(Date.now() / 1000))
@@ -118,6 +99,6 @@ export async function GET(request: Request) {
     return response;
   } catch (error) {
     console.error('Google sign-in failed', error instanceof Error ? error.message : 'Unknown error');
-    return signInError(origin, 'google_failed');
+    return signInError(origin, 'google_failed', secure);
   }
 }

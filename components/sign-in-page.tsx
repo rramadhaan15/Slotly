@@ -95,11 +95,12 @@ export default function SignInPage({ initialError = '' }: { initialError?: strin
             </form>
 
             <div className={styles.orDivider}><span /><small>ATAU</small><span /></div>
-            <Link className={styles.googleButton} href="/api/auth/google" prefetch={false}>
+            {/* oxlint-disable-next-line next/no-html-link-for-pages -- OAuth harus memakai navigasi dokumen penuh. */}
+            <a className={styles.googleButton} href="/api/auth/google">
               <GoogleIcon />
               Lanjutkan dengan Gmail
               <ArrowRight size={18} />
-            </Link>
+            </a>
             <div className={styles.registerPrompt}>
               <span>Belum punya akun?</span>
               <Link href="/register">Daftar di sini <ArrowRight size={16} /></Link>
