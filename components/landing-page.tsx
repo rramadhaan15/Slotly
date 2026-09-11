@@ -83,8 +83,8 @@ export default function LandingPage() {
         </nav>
 
         <div className={styles.headerActions}>
-          <Link className={styles.signIn} href="/dashboard">Masuk</Link>
-          <Link className={styles.headerCta} href="/dashboard">
+          <Link className={styles.signIn} href="/signin">Masuk</Link>
+          <Link className={styles.headerCta} href="/signin">
             Jelajahi tempat <ArrowRight size={16} />
           </Link>
         </div>
