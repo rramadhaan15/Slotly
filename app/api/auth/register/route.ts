@@ -54,7 +54,11 @@ export async function POST(request: Request) {
       201,
       { 'Set-Cookie': sessionCookie(token, new URL(request.url).protocol === 'https:') },
     );
-  } catch {
+  } catch (error) {
+    console.error(
+      'Registration failed',
+      error instanceof Error ? error.message : 'Unknown error',
+    );
     return reply({ error: 'Pendaftaran belum berhasil. Silakan coba lagi.' }, 500);
   }
 }
