@@ -1,6 +1,6 @@
 'use client';
-/* oxlint-disable next/no-html-link-for-pages -- SIWC endpoints require top-level navigation without router prefetch. */
 import Image from 'next/image';
+import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import {
   Dialog,
@@ -282,13 +282,12 @@ export function BookingFlow({
                     )}
                   </button>
                 ) : (
-                  <a
+                  <Link
                     className="primary"
-                    href="/signin-with-chatgpt?return_to=%2F"
-                    target="_top"
+                    href="/signin"
                   >
                     Masuk untuk reservasi
-                  </a>
+                  </Link>
                 )}
               </div>
               <p className="fine-print">

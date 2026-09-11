@@ -1,10 +1,9 @@
 import { redirect } from 'next/navigation';
 import { getSlotlyUser } from '@/lib/auth';
-import SignInPage from '@/components/sign-in-page';
+import RegisterPage from '@/components/register-page';
 
-export default async function SignIn() {
+export default async function Register() {
   const user = await getSlotlyUser();
   if (user) redirect('/dashboard');
-
-  return <SignInPage />;
+  return <RegisterPage />;
 }

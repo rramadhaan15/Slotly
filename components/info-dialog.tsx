@@ -1,5 +1,5 @@
 'use client';
-/* oxlint-disable next/no-html-link-for-pages -- SIWC endpoints require top-level navigation without router prefetch. */
+import Link from 'next/link';
 import {
   Dialog,
   DialogContent,
@@ -25,6 +25,11 @@ export function InfoDialog({
   area: string;
   onArea: (a: string) => void;
 }) {
+  async function signOut() {
+    await fetch('/api/auth/logout', { method: 'POST' });
+    window.location.assign('/');
+  }
+
   return (
     <Dialog open={!!info} onOpenChange={(v) => !v && setInfo('')}>
       <DialogContent className="standard-dialog">
@@ -119,25 +124,22 @@ export function InfoDialog({
               <p>{user.email}</p>
             </div>
             <p className="fine-print">
-              Masuk menggunakan akun ChatGPT. Pendaftaran email/OTP mandiri
-              belum diaktifkan.
+              Akun Slotly menggunakan email dan password yang terenkripsi.
             </p>
-            <a
+            <button
               className="outline"
-              href="/signout-with-chatgpt?return_to=%2F"
-              target="_top"
+              onClick={() => void signOut()}
             >
               Keluar dari akun
-            </a>
+            </button>
           </>
         ) : (
-          <a
+          <Link
             className="primary"
-            href="/signin-with-chatgpt?return_to=%2F"
-            target="_top"
+            href="/signin"
           >
-            Masuk dengan ChatGPT <ArrowUpRight size={17} />
-          </a>
+            Masuk dengan email <ArrowUpRight size={17} />
+          </Link>
         )}
       </DialogContent>
     </Dialog>

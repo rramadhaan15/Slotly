@@ -1,4 +1,4 @@
-import { getChatGPTUser } from '@/app/chatgpt-auth';
+import { getSlotlyUser } from '@/lib/auth';
 import { database, adminIds } from '@/lib/db';
 import { venues, categories, type Venue } from '@/lib/catalog';
 import {
@@ -33,7 +33,7 @@ async function catalog(db: D1Database) {
   ] as Venue[];
 }
 async function identity() {
-  const user = await getChatGPTUser();
+  const user = await getSlotlyUser();
   if (!user) throw new ClientError('Silakan masuk untuk melanjutkan.', 401);
   return user;
 }
@@ -49,7 +49,7 @@ function fail(error: unknown) {
 export async function GET(request: Request) {
   try {
     const url = new URL(request.url);
-    const user = await getChatGPTUser();
+    const user = await getSlotlyUser();
 
     // The public landing page must remain usable without a D1 binding. In local
     // development (and for signed-out visitors) the built-in catalog is all we

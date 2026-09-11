@@ -113,9 +113,31 @@
 .heading h2 { margin: 8px 0 8px; font: 500 37px/1.1 Georgia, 'Times New Roman', serif; letter-spacing: -1.5px; }
 .heading p { color: #7b8981; font-size: 13px; line-height: 1.65; }
 
+.authForm { display: grid; gap: 17px; margin-top: 25px; }
+.authForm label { display: grid; gap: 7px; color: #455c50; font-size: 11px; font-weight: 650; }
+.labelRow { display: flex; align-items: center; justify-content: space-between; }
+.labelRow button { border: 0; padding: 0; color: #5b876b; background: transparent; font-size: 10px; font-weight: 600; }
+.inputWrap {
+  min-height: 46px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 13px;
+  border: 1px solid #dce5dd;
+  border-radius: 9px;
+  color: #829088;
+  background: #fbfcfb;
+  transition: border-color .18s, box-shadow .18s, background .18s;
+}
+.inputWrap:focus-within { border-color: #64a27a; background: white; box-shadow: 0 0 0 3px rgba(72, 145, 96, .11); }
+.inputWrap input { flex: 1; min-width: 0; padding: 0; border: 0; outline: 0 !important; color: #263d31; background: transparent; font-size: 12px; }
+.inputWrap input::placeholder { color: #abb4ae; }
+.eyeButton { flex: none; padding: 3px; border: 0; color: #7d8b83; background: transparent; }
+
 .authButton {
   min-height: 52px;
-  margin-top: 28px;
+  margin-top: 2px;
+  width: 100%;
   padding: 0 15px;
   display: grid;
   grid-template-columns: 22px 1fr 18px;
@@ -132,6 +154,42 @@
 }
 .authButton svg:first-child { width: 21px; height: 21px; }
 .authButton:hover { transform: translateY(-2px); background: #206b41; box-shadow: 0 13px 28px rgba(39, 121, 76, .23); }
+.spinner { animation: spin .8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.formError { padding: 10px 12px; border: 1px solid #f1c9c2; border-radius: 8px; color: #a33c32; background: #fff2ef; font-size: 10px; line-height: 1.45; }
+
+.registerPrompt {
+  margin-top: 19px;
+  padding-top: 19px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 12px;
+  border-top: 1px solid #e7ece8;
+  color: #7d8b83;
+  font-size: 11px;
+}
+.registerPrompt a {
+  min-height: 37px;
+  padding: 0 13px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: 1px solid #cdddcf;
+  border-radius: 8px;
+  color: #27794c;
+  background: #f4f8f3;
+  font-size: 11px;
+  font-weight: 700;
+}
+.registerPrompt a:hover { background: #eaf3e9; }
+.loginPrompt { margin-top: 16px; display: flex; align-items: center; justify-content: center; gap: 6px; color: #849088; font-size: 10px; }
+.loginPrompt a { color: #27794c; font-weight: 700; }
+.registerForm { gap: 12px; margin-top: 20px; }
+.registerForm .inputWrap { min-height: 42px; }
+.registerCard .formPanel { padding-top: 27px; padding-bottom: 21px; }
+.registerCard .heading h2 { font-size: 34px; }
 
 .divider { margin: 27px 0 23px; display: flex; align-items: center; gap: 11px; }
 .divider span { height: 1px; flex: 1; background: #e7ece8; }
@@ -143,7 +201,7 @@
 .benefits li > span { display: flex; flex-direction: column; gap: 3px; }
 .benefits strong { color: #3e5649; font-size: 12px; font-weight: 650; }
 .benefits small { color: #8a958f; font-size: 10px; line-height: 1.45; }
-.security { margin-top: 24px; display: flex; align-items: center; justify-content: center; gap: 7px; color: #8a958f; font-size: 9px; }
+.security { margin-top: 18px; display: flex; align-items: center; justify-content: center; gap: 7px; color: #8a958f; font-size: 9px; }
 .security svg { color: #64866f; }
 .terms { max-width: 340px; margin: 26px auto 0; color: #a0aaa4; text-align: center; font-size: 8px; line-height: 1.55; }
 
