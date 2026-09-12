@@ -16,6 +16,7 @@ import {
   Users,
 } from 'lucide-react';
 import styles from './landing-page.module.css';
+import { Footer } from './ui/modem-animated-footer';
 
 const venues = [
   {
@@ -228,14 +229,18 @@ export default function LandingPage() {
         </section>
       </main>
 
-      <footer className={styles.footer}>
-        <Link className={styles.brand} href="/">
-          <span className={styles.brandIcon}><CalendarDays size={20} /></span>
-          <span>slotly<span>.</span></span>
-        </Link>
-        <p>Buat waktu untuk hal yang kamu suka.</p>
-        <span>© 2026 Slotly</span>
-      </footer>
+      <Footer
+        brandName="slotly"
+        brandDescription="Temukan tempat, pilih waktu terbaik, dan buat setiap rencana jadi lebih mudah bersama Slotly."
+        navLinks={[
+          { label: 'Tempat pilihan', href: '#pilihan' },
+          { label: 'Cara kerja', href: '#cara-kerja' },
+          { label: 'Untuk merchant', href: '#partner' },
+          { label: 'Masuk', href: '/signin' },
+        ]}
+        brandIcon={<CalendarDays className="size-8 text-white sm:size-10 md:size-14" />}
+        copyrightText="Seluruh hak cipta dilindungi."
+      />
     </div>
   );
 }
