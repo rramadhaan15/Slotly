@@ -1,0 +1,27 @@
+.logo {
+  position: relative;
+  display: inline-block;
+  width: 132px;
+  aspect-ratio: 3.18 / 1;
+  flex: none;
+  overflow: hidden;
+  border-radius: 8px;
+  background: #fbf9f2;
+  line-height: 0;
+}
+
+.image {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 128%;
+  height: auto;
+  max-width: none;
+  transform: translate(-50%, -50%);
+}
+
+.framed {
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.42),
+    0 6px 20px rgba(19, 42, 30, 0.12);
+}

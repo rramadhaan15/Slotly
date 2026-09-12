@@ -47,6 +47,7 @@ import {
   type Merchant,
 } from './account-views';
 import { InfoDialog } from './info-dialog';
+import { SlotlyLogo } from './slotly-logo';
 type AppData = {
   venues: Venue[];
   user: { name: string; email: string } | null;
@@ -253,10 +254,7 @@ export default function Slotly() {
       <Sidebar className="app-sidebar">
         <SidebarHeader>
           <Link className="brand" href="/">
-            <span className="brand-icon">
-              <CalendarDays size={23} />
-            </span>
-            slotly<span className="brand-dot">.</span>
+            <SlotlyLogo className="w-[145px]" priority />
           </Link>
         </SidebarHeader>
         <SidebarContent>

@@ -4,7 +4,6 @@ import {
   ArrowRight,
   BadgeCheck,
   CalendarCheck,
-  CalendarDays,
   ChevronRight,
   Clock3,
   MapPin,
@@ -16,6 +15,7 @@ import {
   Users,
 } from 'lucide-react';
 import styles from './landing-page.module.css';
+import { SlotlyLogo } from './slotly-logo';
 import { Footer } from './ui/modem-animated-footer';
 
 const venues = [
@@ -71,10 +71,7 @@ export default function LandingPage() {
     <div className={styles.page}>
       <header className={styles.header}>
         <Link className={styles.brand} href="/" aria-label="Slotly beranda">
-          <span className={styles.brandIcon}>
-            <CalendarDays size={22} />
-          </span>
-          <span>slotly<span>.</span></span>
+          <SlotlyLogo className={styles.brandLogo} priority />
         </Link>
 
         <nav className={styles.nav} aria-label="Navigasi utama">
@@ -238,7 +235,6 @@ export default function LandingPage() {
           { label: 'Untuk merchant', href: '#partner' },
           { label: 'Masuk', href: '/signin' },
         ]}
-        brandIcon={<CalendarDays className="size-8 text-white sm:size-10 md:size-14" />}
         copyrightText="Seluruh hak cipta dilindungi."
       />
     </div>

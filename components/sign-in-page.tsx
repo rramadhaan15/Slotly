@@ -3,8 +3,9 @@
 import { useState, type SyntheticEvent } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowLeft, ArrowRight, CalendarDays, Eye, EyeOff, Loader2, LockKeyhole, LogIn, Mail, MapPin, Sparkles, Star } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Eye, EyeOff, Loader2, LockKeyhole, LogIn, Mail, MapPin, Sparkles, Star } from 'lucide-react';
 import styles from './sign-in-page.module.css';
+import { SlotlyLogo } from './slotly-logo';
 
 function GoogleIcon() {
   return (
@@ -50,7 +51,7 @@ export default function SignInPage({ initialError = '' }: { initialError?: strin
         <div className={styles.storyPanel}>
           <Image src="/images/padel.jpg" alt="Lapangan padel yang tersedia di Slotly" fill sizes="(max-width: 760px) 100vw, 50vw" priority />
           <div className={styles.overlay} />
-          <Link className={styles.brand} href="/"><span><CalendarDays size={21} /></span>slotly<i>.</i></Link>
+          <Link className={styles.brand} href="/" aria-label="Slotly beranda"><SlotlyLogo className={styles.authLogo} framed priority /></Link>
           <div className={styles.storyCopy}>
             <span className={styles.eyebrow}><Sparkles size={14} /> Ada waktu? Ada Slotly.</span>
             <h1>Lebih banyak momen, lebih sedikit repot.</h1>
@@ -62,9 +63,9 @@ export default function SignInPage({ initialError = '' }: { initialError?: strin
           </div>
         </div>
         <div className={styles.formPanel}>
-          <div className={styles.mobileBrand}><span><CalendarDays size={20} /></span>slotly<i>.</i></div>
+          <div className={styles.mobileBrand}><SlotlyLogo className={styles.mobileLogo} priority /></div>
           <div className={styles.formContent}>
-            <span className={styles.welcomeIcon}><CalendarDays size={22} /></span>
+            <SlotlyLogo className={styles.welcomeLogo} />
             <div className={styles.heading}>
               <span>SELAMAT DATANG KEMBALI</span>
               <h2>Masuk ke Slotly</h2>

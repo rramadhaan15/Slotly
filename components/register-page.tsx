@@ -3,8 +3,9 @@
 import { useState, type SyntheticEvent } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowLeft, ArrowRight, CalendarDays, Eye, EyeOff, Loader2, LockKeyhole, Mail, MapPin, Sparkles, Star, UserRound } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Eye, EyeOff, Loader2, LockKeyhole, Mail, MapPin, Sparkles, Star, UserRound } from 'lucide-react';
 import styles from './sign-in-page.module.css';
+import { SlotlyLogo } from './slotly-logo';
 
 export default function RegisterPage() {
   const [username, setUsername] = useState('');
@@ -45,7 +46,7 @@ export default function RegisterPage() {
         <div className={styles.storyPanel}>
           <Image src="/images/studio.jpg" alt="Studio kreatif pilihan Slotly" fill sizes="(max-width: 760px) 100vw, 50vw" priority />
           <div className={styles.overlay} />
-          <Link className={styles.brand} href="/"><span><CalendarDays size={21} /></span>slotly<i>.</i></Link>
+          <Link className={styles.brand} href="/" aria-label="Slotly beranda"><SlotlyLogo className={styles.authLogo} framed priority /></Link>
           <div className={styles.storyCopy}>
             <span className={styles.eyebrow}><Sparkles size={14} /> Mulai dari satu slot.</span>
             <h1>Buat akun, buat lebih banyak cerita.</h1>
@@ -57,7 +58,7 @@ export default function RegisterPage() {
           </div>
         </div>
         <div className={styles.formPanel}>
-          <div className={styles.mobileBrand}><span><CalendarDays size={20} /></span>slotly<i>.</i></div>
+          <div className={styles.mobileBrand}><SlotlyLogo className={styles.mobileLogo} priority /></div>
           <div className={styles.formContent}>
             <div className={styles.heading}>
               <span>GABUNG DENGAN SLOTLY</span>

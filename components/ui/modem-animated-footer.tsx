@@ -2,8 +2,8 @@
 
 import type { ReactNode } from 'react';
 import Link from 'next/link';
-import { CalendarDays } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { SlotlyLogo } from '@/components/slotly-logo';
 
 interface FooterLink {
   label: string;
@@ -40,9 +40,7 @@ export function Footer({
           <div className="relative z-20 flex w-full flex-col">
             <div className="flex w-full flex-col items-center">
               <div className="flex flex-1 flex-col items-center space-y-2">
-                <span className="text-3xl font-bold tracking-[-0.04em] text-foreground">
-                  {brandName}<span className="text-primary">.</span>
-                </span>
+                <SlotlyLogo className="w-32 sm:w-36" />
                 <p className="w-full max-w-sm px-4 text-center font-semibold text-muted-foreground sm:w-96 sm:px-0">
                   {brandDescription}
                 </p>
@@ -104,11 +102,9 @@ export function Footer({
           {brandName.toUpperCase()}
         </div>
 
-        <div className="absolute bottom-20 left-1/2 z-10 flex -translate-x-1/2 items-center justify-center rounded-3xl border-2 border-border bg-background/60 p-3 shadow-[0_0_28px_rgba(31,62,46,0.16)] backdrop-blur-sm duration-300 hover:border-primary">
-          <div className="flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-[#1f3e2e] shadow-lg sm:size-16 md:size-24">
-            {brandIcon || (
-              <CalendarDays className="size-8 text-white drop-shadow-lg sm:size-10 md:size-14" />
-            )}
+        <div className="absolute bottom-20 left-1/2 z-10 flex -translate-x-1/2 items-center justify-center rounded-3xl border-2 border-border bg-background/70 p-3 shadow-[0_0_28px_rgba(31,62,46,0.16)] backdrop-blur-sm duration-300 hover:border-primary">
+          <div className="flex h-12 w-28 items-center justify-center overflow-hidden rounded-2xl bg-[#fbf9f2] shadow-lg sm:h-16 sm:w-36 md:h-20 md:w-44">
+            {brandIcon || <SlotlyLogo className="w-full" />}
           </div>
         </div>
 

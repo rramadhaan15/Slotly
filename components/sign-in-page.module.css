@@ -74,18 +74,9 @@
   letter-spacing: -1.5px;
 }
 .brand { position: absolute; z-index: 2; left: 34px; top: 30px; color: white; }
-.brand > span, .mobileBrand > span {
-  width: 35px;
-  height: 36px;
-  display: grid;
-  place-items: center;
-  border-radius: 10px;
-  color: #286d47;
-  background: white;
-  transform: rotate(-5deg);
-}
-.brand i, .mobileBrand i { color: #82c798; font-style: normal; margin-left: -8px; }
-
+.authLogo { width: 126px; }
+.mobileLogo { width: 118px; }
+.welcomeLogo { width: 108px; margin-bottom: 24px; }
 .storyCopy { position: absolute; z-index: 2; left: 40px; right: 40px; bottom: 112px; color: white; }
 .eyebrow { display: inline-flex; align-items: center; gap: 7px; margin-bottom: 18px; color: #d8eadc; font-size: 10px; font-weight: 700; letter-spacing: 1.3px; text-transform: uppercase; }
 .storyCopy h1 { max-width: 410px; font: 500 43px/1.04 Georgia, 'Times New Roman', serif; letter-spacing: -2px; }
@@ -247,9 +238,8 @@
   .storyPanel { display: none; }
   .formPanel { height: 100%; min-height: 0; padding: 22px 24px 18px; justify-content: flex-start; }
   .mobileBrand { display: flex; margin-bottom: 20px; font-size: 24px; }
-  .mobileBrand > span { width: 32px; height: 33px; color: white; background: #27794c; }
   .formContent { margin: 0 auto; }
-  .welcomeIcon { margin-bottom: 20px; }
+  .welcomeLogo { margin-bottom: 20px; }
   .heading h2 { font-size: 34px; }
   .terms { margin-top: auto; padding-top: 25px; }
 }
@@ -275,7 +265,7 @@
   .card { height: calc(100svh - 64px); }
   .formPanel { padding-top: 16px; padding-bottom: 12px; }
   .mobileBrand { margin-bottom: 12px; }
-  .welcomeIcon { display: none; }
+  .welcomeIcon, .welcomeLogo { display: none; }
   .heading h2 { margin: 4px 0; font-size: 30px; }
   .heading p { line-height: 1.4; }
   .authForm { gap: 10px; margin-top: 13px; }
