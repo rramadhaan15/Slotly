@@ -35,9 +35,9 @@ export function Footer({
 }: FooterProps) {
   return (
     <section className={cn('relative mt-0 w-full overflow-hidden', className)}>
-      <footer className="relative mt-20 border-t border-border bg-background">
-        <div className="relative mx-auto flex min-h-[30rem] max-w-7xl flex-col justify-between p-4 py-10 sm:min-h-[35rem] md:min-h-[40rem]">
-          <div className="mb-12 flex w-full flex-col sm:mb-20 md:mb-0">
+      <footer className="relative mt-12 border-t border-border bg-background">
+        <div className="relative mx-auto flex min-h-[26rem] max-w-7xl flex-col justify-between p-4 py-8 sm:min-h-[28rem] sm:py-10">
+          <div className="relative z-20 flex w-full flex-col">
             <div className="flex w-full flex-col items-center">
               <div className="flex flex-1 flex-col items-center space-y-2">
                 <span className="text-3xl font-bold tracking-[-0.04em] text-foreground">
@@ -86,7 +86,7 @@ export function Footer({
             </div>
           </div>
 
-          <div className="mt-20 flex flex-col items-center justify-center gap-2 px-4 md:mt-24 md:flex-row md:justify-between md:px-0">
+          <div className="relative z-20 mt-auto flex flex-col items-center justify-center gap-2 px-4 md:flex-row md:justify-between md:px-0">
             <p className="text-center text-sm text-muted-foreground md:text-left">
               © {new Date().getFullYear()} {brandName}. {copyrightText}
             </p>
@@ -97,14 +97,14 @@ export function Footer({
         </div>
 
         <div
-          className="pointer-events-none absolute bottom-40 left-1/2 max-w-[95vw] -translate-x-1/2 select-none bg-gradient-to-b from-foreground/20 via-foreground/10 to-transparent bg-clip-text px-4 text-center font-extrabold leading-none tracking-tighter text-transparent md:bottom-32"
+          className="pointer-events-none absolute bottom-32 left-1/2 max-w-[95vw] -translate-x-1/2 select-none bg-gradient-to-b from-foreground/20 via-foreground/10 to-transparent bg-clip-text px-4 text-center font-extrabold leading-none tracking-tighter text-transparent"
           style={{ fontSize: 'clamp(3rem, 12vw, 10rem)' }}
           aria-hidden="true"
         >
           {brandName.toUpperCase()}
         </div>
 
-        <div className="absolute bottom-24 left-1/2 z-10 flex -translate-x-1/2 items-center justify-center rounded-3xl border-2 border-border bg-background/60 p-3 shadow-[0_0_28px_rgba(31,62,46,0.16)] backdrop-blur-sm duration-300 hover:border-primary md:bottom-20">
+        <div className="absolute bottom-20 left-1/2 z-10 flex -translate-x-1/2 items-center justify-center rounded-3xl border-2 border-border bg-background/60 p-3 shadow-[0_0_28px_rgba(31,62,46,0.16)] backdrop-blur-sm duration-300 hover:border-primary">
           <div className="flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-[#1f3e2e] shadow-lg sm:size-16 md:size-24">
             {brandIcon || (
               <CalendarDays className="size-8 text-white drop-shadow-lg sm:size-10 md:size-14" />
