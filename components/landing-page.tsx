@@ -107,7 +107,7 @@ export default function LandingPage() {
               Pilih jadwalnya, reservasi dengan mudah, lalu nikmati waktumu.
             </p>
             <div className={styles.heroActions}>
-              <Link className={styles.primaryCta} href="/dashboard">
+              <Link className={styles.primaryCta} href="/signin">
                 Temukan tempatmu <ArrowRight size={18} />
               </Link>
               <a className={styles.secondaryCta} href="#cara-kerja">
@@ -158,14 +158,14 @@ export default function LandingPage() {
               <h2>Tempat bagus, waktu yang pas.</h2>
               <p>Mulai dari aktivitas favorit sampai pengalaman baru.</p>
             </div>
-            <Link href="/dashboard" className={styles.textLink}>
+            <Link href="/signin" className={styles.textLink}>
               Lihat semua tempat <ArrowRight size={17} />
             </Link>
           </div>
 
           <div className={styles.venueGrid}>
             {venues.map((venue) => (
-              <Link href="/dashboard" className={styles.venueCard} key={venue.name}>
+              <Link href="/signin" className={styles.venueCard} key={venue.name}>
                 <div className={styles.venueImage}>
                   <Image src={venue.image} alt={venue.name} fill sizes="(max-width: 760px) 100vw, 33vw" />
                   <span className={styles.category}>{venue.category}</span>
@@ -188,7 +188,7 @@ export default function LandingPage() {
             <span className={styles.kicker}>SEMUDAH ITU</span>
             <h2>Rencana seru dimulai dari satu slot.</h2>
             <p>Tiga langkah sederhana untuk mengubah waktu luang menjadi momen yang berarti.</p>
-            <Link className={styles.primaryCta} href="/dashboard">
+            <Link className={styles.primaryCta} href="/signin">
               Mulai jelajahi <ArrowRight size={18} />
             </Link>
           </div>
