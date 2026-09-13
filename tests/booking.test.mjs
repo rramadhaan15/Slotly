@@ -4,7 +4,9 @@ import { DatabaseSync } from 'node:sqlite';
 import { readFileSync, readdirSync } from 'node:fs';
 import {
   HOLD_SQL,
+  HOLD_RANGE_SQL,
   validSlot,
+  validSlotRange,
   canCancel,
   contact,
   totals,
@@ -24,6 +26,13 @@ test('reject malformed, impossible, past, and out-of-horizon slot dates', () => 
   ])
     assert.equal(validSlot(d, h, now), false);
   assert.equal(validSlot('2026-09-11', 8, now), true);
+});
+test('accept only consecutive ranges within operating hours', () => {
+  assert.equal(validSlotRange('2026-09-11', 8, 2, now), true);
+  assert.equal(validSlotRange('2026-09-11', 20, 2, now), true);
+  assert.equal(validSlotRange('2026-09-11', 21, 2, now), false);
+  assert.equal(validSlotRange('2026-09-11', 8, 0, now), false);
+  assert.equal(validSlotRange('2026-09-11', 8, 5, now), false);
 });
 test('24-hour cancellation boundary uses Jakarta time', () => {
   assert.equal(canCancel('2026-09-11', 10, now), true);
@@ -66,6 +75,36 @@ function claim(db, user, id, expires = 1600, current = 1000, unit = 'Court A') {
       current,
     );
 }
+function claimRange(
+  db,
+  user,
+  id,
+  start,
+  duration,
+  expires = 1600,
+  current = 1000,
+  unit = 'Court A',
+) {
+  return db
+    .prepare(HOLD_RANGE_SQL)
+    .all(
+      start,
+      start,
+      duration,
+      `padel|${unit}|2026-09-11|`,
+      'padel',
+      unit,
+      '2026-09-11',
+      user,
+      id,
+      expires,
+      'padel',
+      unit,
+      '2026-09-11',
+      current,
+      current,
+    );
+}
 test('database uniqueness lets only the first requester hold the slot', () => {
   const db = database();
   assert.ok(claim(db, 'alice', 'hold-a'));
@@ -100,5 +139,21 @@ test('different units can be booked at the same time', () => {
   assert.ok(claim(db, 'alice', 'hold-a', 1600, 1000, 'Court A'));
   assert.ok(claim(db, 'bob', 'hold-b', 1600, 1000, 'Court B'));
   assert.equal(db.prepare('SELECT count(*) n FROM slot_claims').get().n, 2);
+  db.close();
+});
+test('a consecutive range is held atomically when every hour is free', () => {
+  const db = database();
+  assert.deepEqual(
+    claimRange(db, 'alice', 'range-a', 8, 2).map((slot) => slot.hour),
+    [8, 9],
+  );
+  assert.deepEqual(claimRange(db, 'bob', 'range-b', 9, 2), []);
+  assert.deepEqual(
+    db
+      .prepare('SELECT hour FROM slot_claims ORDER BY hour')
+      .all()
+      .map((slot) => slot.hour),
+    [8, 9],
+  );
   db.close();
 });

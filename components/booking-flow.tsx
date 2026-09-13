@@ -21,7 +21,7 @@ import {
   Loader2,
 } from 'lucide-react';
 import { type Venue, today, dateLabel, money } from '@/lib/catalog';
-import { validSlot } from '@/lib/booking-domain';
+import { MAX_BOOKING_HOURS, validSlotRange } from '@/lib/booking-domain';
 import { Choice, api } from './shared';
 type Slot = { unit: string; hour: number; status: string };
 export function BookingFlow({
@@ -40,6 +40,7 @@ export function BookingFlow({
   const [date, setDate] = useState(initialDate || today());
   const [unit, setUnit] = useState(venue.units[0]);
   const [hour, setHour] = useState<number | null>(null);
+  const [duration, setDuration] = useState(1);
   const [slots, setSlots] = useState<Slot[]>([]);
   const [step, setStep] = useState(0);
   const [hold, setHold] = useState<{
@@ -121,6 +122,7 @@ export function BookingFlow({
         unit,
         date,
         hour,
+        duration,
       });
       setHold(r);
       setStep(1);
@@ -225,6 +227,32 @@ export function BookingFlow({
                   />
                 </label>
               </div>
+              <div className="duration-section">
+                <div className="duration-heading">
+                  <h3>Berapa lama?</h3>
+                  <span>Waktu yang dipilih harus berurutan</span>
+                </div>
+                <div className="duration-options" aria-label="Durasi reservasi">
+                  {Array.from(
+                    { length: MAX_BOOKING_HOURS },
+                    (_, i) => i + 1,
+                  ).map((hours) => (
+                    <button
+                      type="button"
+                      key={hours}
+                      aria-pressed={duration === hours}
+                      className={duration === hours ? 'chosen' : ''}
+                      onClick={() => {
+                        setDuration(hours);
+                        setHour(null);
+                        setError('');
+                      }}
+                    >
+                      {hours} jam
+                    </button>
+                  ))}
+                </div>
+              </div>
               <div className="slot-heading">
                 <h3>Pilih waktu mulai</h3>
                 <span>
@@ -234,10 +262,18 @@ export function BookingFlow({
               </div>
               <div className="slot-grid">
                 {Array.from({ length: 14 }, (_, i) => i + 8).map((h) => {
+                  const range = Array.from(
+                    { length: duration },
+                    (_, i) => h + i,
+                  );
                   const disabled =
                     loading ||
-                    !validSlot(date, h) ||
-                    slots.some((s) => s.unit === unit && s.hour === h);
+                    !validSlotRange(date, h, duration) ||
+                    range.some((rangeHour) =>
+                      slots.some(
+                        (s) => s.unit === unit && s.hour === rangeHour,
+                      ),
+                    );
                   return (
                     <button
                       key={h}
@@ -252,9 +288,18 @@ export function BookingFlow({
                   );
                 })}
               </div>
+              {hour !== null && (
+                <p className="selected-range">
+                  <Clock size={14} /> Rentang dipilih:{' '}
+                  <strong>
+                    {String(hour).padStart(2, '0')}.00–
+                    {String(hour + duration).padStart(2, '0')}.00 WIB
+                  </strong>
+                </p>
+              )}
               <p className="fine-print">
-                <Clock size={14} /> Durasi 60 menit · Jam operasional
-                08.00–22.00 WIB
+                <Clock size={14} /> Durasi {duration} jam · Jam operasional
+                08.00–22.00 WIB · Slot dipilih otomatis secara berurutan
               </p>
               {error && (
                 <p role="alert" className="error-message">
@@ -263,8 +308,8 @@ export function BookingFlow({
               )}
               <div className="detail-bottom">
                 <div>
-                  <small>Total per slot</small>
-                  <strong>{money(venue.price)}</strong>
+                  <small>Total {duration} jam</small>
+                  <strong>{money(venue.price * duration)}</strong>
                 </div>
                 {signedIn ? (
                   <button
@@ -333,7 +378,8 @@ export function BookingFlow({
                 <h3>{venue.name}</h3>
                 <p>{unit}</p>
                 <span>
-                  {dateLabel(date)} · {hour}.00 WIB
+                  {dateLabel(date)} · {String(hour).padStart(2, '0')}.00–
+                  {String((hour ?? 0) + duration).padStart(2, '0')}.00 WIB
                 </span>
               </div>
             </div>
@@ -377,8 +423,10 @@ export function BookingFlow({
             </label>
             <div className="price-breakdown">
               <p>
-                <span>Harga 1 slot × 60 menit</span>
-                <span>{money(venue.price)}</span>
+                <span>
+                  Harga {money(venue.price)} × {duration} jam
+                </span>
+                <span>{money(venue.price * duration)}</span>
               </p>
               <p>
                 <span>Biaya layanan</span>
@@ -387,14 +435,16 @@ export function BookingFlow({
               {payment === 'dp' && (
                 <p>
                   <span>Sisa pembayaran di tempat</span>
-                  <span>{money(Math.floor(venue.price / 2))}</span>
+                  <span>{money(Math.floor((venue.price * duration) / 2))}</span>
                 </p>
               )}
               <p className="total">
                 <strong>Total simulasi</strong>
                 <strong>
                   {money(
-                    payment === 'dp' ? Math.ceil(venue.price / 2) : venue.price,
+                    payment === 'dp'
+                      ? Math.ceil((venue.price * duration) / 2)
+                      : venue.price * duration,
                   )}
                 </strong>
               </p>
@@ -451,11 +501,15 @@ export function BookingFlow({
               </p>
               <p>
                 <Clock size={17} />
-                {hour}.00–{(hour ?? 0) + 1}.00 WIB · {unit}
+                {String(hour).padStart(2, '0')}.00–
+                {String((hour ?? 0) + duration).padStart(2, '0')}.00 WIB ·{' '}
+                {unit}
               </p>
               <small>
                 {money(
-                  payment === 'dp' ? Math.ceil(venue.price / 2) : venue.price,
+                  payment === 'dp'
+                    ? Math.ceil((venue.price * duration) / 2)
+                    : venue.price * duration,
                 )}{' '}
                 · Pembayaran simulasi
               </small>

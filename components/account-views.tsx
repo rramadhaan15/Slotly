@@ -50,6 +50,7 @@ import {
 } from '@/lib/catalog';
 import { RescheduleDialog } from './reschedule-dialog';
 import { canCancel } from '@/lib/booking-domain';
+const bookingDuration = (booking: Booking) => booking.duration ?? 1;
 export function BookingHistory({
   bookings,
   allVenues,
@@ -80,7 +81,7 @@ export function BookingHistory({
     b.status === 'cancelled'
       ? 'cancelled'
       : Date.parse(
-            `${b.date}T${String(b.hour + 1).padStart(2, '0')}:00:00+07:00`,
+            `${b.date}T${String(b.hour + bookingDuration(b)).padStart(2, '0')}:00:00+07:00`,
           ) < now
         ? 'completed'
         : 'confirmed';
@@ -160,7 +161,9 @@ export function BookingHistory({
                   {b.unit} · {dateLabel(b.date)}
                 </p>
                 <p>
-                  <Clock size={14} /> {b.hour}.00–{b.hour + 1}.00 WIB
+                  <Clock size={14} /> {String(b.hour).padStart(2, '0')}.00–
+                  {String(b.hour + bookingDuration(b)).padStart(2, '0')}.00 WIB
+                  · {bookingDuration(b)} jam
                 </p>
                 <small>
                   Pembayaran simulasi · {b.paid < b.price ? 'DP 50%' : 'Lunas'}
@@ -394,6 +397,7 @@ export function AdminDashboard({
           'Kode',
           'Tanggal',
           'Jam',
+          'Durasi',
           'Unit',
           'Status',
           'Total',
@@ -403,6 +407,7 @@ export function AdminDashboard({
           b.id,
           b.date,
           b.hour,
+          bookingDuration(b),
           b.unit ?? '-',
           b.status,
           b.price,
@@ -580,7 +585,11 @@ export function AdminDashboard({
                 <TableRow key={b.id}>
                   <TableCell>SL-{b.id.slice(0, 8).toUpperCase()}</TableCell>
                   <TableCell>{dateLabel(b.date)}</TableCell>
-                  <TableCell>{b.hour}.00 WIB</TableCell>
+                  <TableCell>
+                    {String(b.hour).padStart(2, '0')}.00–
+                    {String(b.hour + bookingDuration(b)).padStart(2, '0')}.00
+                    WIB
+                  </TableCell>
                   <TableCell>
                     <span className={`status ${b.status}`}>
                       {b.status === 'confirmed' ? 'Dikonfirmasi' : 'Dibatalkan'}

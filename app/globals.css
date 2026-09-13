@@ -1380,6 +1380,44 @@ svg {
   background: #589565;
   border-radius: 50%;
 }
+.duration-section {
+  margin: 4px 0 22px;
+}
+.duration-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.duration-heading h3 {
+  font-size: 15px;
+  font-weight: 600;
+}
+.duration-heading span {
+  color: #879386;
+  font-size: 11px;
+}
+.duration-options {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+.duration-options button {
+  min-height: 42px;
+  border: 1px solid #d9e5d9;
+  border-radius: 8px;
+  background: #f4f8f1;
+  color: #496d4e;
+  font-size: 13px;
+  font-weight: 600;
+}
+.duration-options button.chosen {
+  background: #2c784d;
+  border-color: #2c784d;
+  color: #fff;
+  box-shadow: 0 0 0 2px #cce3d1;
+}
 .slot-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
@@ -1409,6 +1447,14 @@ svg {
 }
 .slot-grid button small {
   font-size: 8px;
+}
+.selected-range {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 12px;
+  color: #496d4e;
+  font-size: 12px;
 }
 .fine-print {
   display: flex;

@@ -60,6 +60,7 @@ export type Booking = {
   unit: string;
   date: string;
   hour: number;
+  duration: number;
   price: number;
   paid: number;
   status: string;

@@ -1,5 +1,26 @@
 export const HOLD_SECONDS = 600;
+export const MAX_BOOKING_HOURS = 4;
 export const HOLD_SQL = `INSERT INTO slot_claims (id,venue_id,unit,date,hour,user_id,hold_id,expires_at,status) VALUES (?,?,?,?,?,?,?,?,'hold') ON CONFLICT(venue_id,unit,date,hour) DO UPDATE SET user_id=excluded.user_id,hold_id=excluded.hold_id,expires_at=excluded.expires_at,status='hold' WHERE slot_claims.status='hold' AND slot_claims.expires_at <= ? RETURNING hold_id,expires_at`;
+export const HOLD_RANGE_SQL = `WITH RECURSIVE requested(hour) AS (
+  SELECT ?
+  UNION ALL
+  SELECT hour + 1 FROM requested WHERE hour + 1 < ? + ?
+)
+INSERT INTO slot_claims (id,venue_id,unit,date,hour,user_id,hold_id,expires_at,status)
+SELECT ? || hour,?,?,?,hour,?,?,?,'hold' FROM requested
+WHERE NOT EXISTS (
+  SELECT 1 FROM slot_claims AS existing
+  JOIN requested ON requested.hour = existing.hour
+  WHERE existing.venue_id=? AND existing.unit=? AND existing.date=?
+    AND (existing.status!='hold' OR existing.expires_at>?)
+)
+ON CONFLICT(venue_id,unit,date,hour) DO UPDATE SET
+  user_id=excluded.user_id,
+  hold_id=excluded.hold_id,
+  expires_at=excluded.expires_at,
+  status='hold'
+WHERE slot_claims.status='hold' AND slot_claims.expires_at<=?
+RETURNING hour,hold_id,expires_at`;
 export function validSlot(date: unknown, hour: unknown, now = Date.now()) {
   if (
     typeof date !== 'string' ||
@@ -22,6 +43,24 @@ export function validSlot(date: unknown, hour: unknown, now = Date.now()) {
   return (
     normalized === date && timestamp > now && timestamp < now + 90 * 86400000
   );
+}
+export function validSlotRange(
+  date: unknown,
+  hour: unknown,
+  duration: unknown,
+  now = Date.now(),
+) {
+  if (
+    !Number.isInteger(duration) ||
+    Number(duration) < 1 ||
+    Number(duration) > MAX_BOOKING_HOURS ||
+    !Number.isInteger(hour) ||
+    Number(hour) + Number(duration) > 22
+  )
+    return false;
+  return Array.from({ length: Number(duration) }, (_, i) =>
+    validSlot(date, Number(hour) + i, now),
+  ).every(Boolean);
 }
 export function canCancel(date: string, hour: number, now = Date.now()) {
   return (

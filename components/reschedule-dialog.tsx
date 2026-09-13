@@ -17,6 +17,7 @@ export function RescheduleDialog({
   onClose: () => void;
   onSaved: () => void;
 }) {
+  const duration = booking.duration ?? 1;
   const [date, setDate] = useState(booking.date);
   const [hour, setHour] = useState(String(booking.hour));
   const [busy, setBusy] = useState(false);
@@ -45,8 +46,10 @@ export function RescheduleDialog({
       <DialogContent className="standard-dialog">
         <DialogTitle>Atur ulang waktumu</DialogTitle>
         <DialogDescription>
-          Jadwal saat ini: {dateLabel(booking.date)}, {booking.hour}.00 WIB ·{' '}
-          {booking.unit}.
+          Jadwal saat ini: {dateLabel(booking.date)},{' '}
+          {String(booking.hour).padStart(2, '0')}.00–
+          {String(booking.hour + duration).padStart(2, '0')}.00 WIB · {duration}{' '}
+          jam · {booking.unit}.
         </DialogDescription>
         <form onSubmit={submit}>
           <div className="booking-fields">
@@ -70,13 +73,14 @@ export function RescheduleDialog({
                 options={Array.from({ length: 14 }, (_, i) => ({
                   value: String(i + 8),
                   label: `${i + 8}.00 WIB`,
-                }))}
+                })).filter((option) => Number(option.value) + duration <= 22)}
               />
             </label>
           </div>
           <p className="fine-print">
             Ketersediaan diperiksa saat menyimpan. Jika slot baru terisi, jadwal
-            sebelumnya tetap aman. Unit dan harga tidak berubah.
+            sebelumnya tetap aman. Durasi {duration} jam, unit, dan harga tidak
+            berubah; seluruh slot harus tersedia secara berurutan.
           </p>
           {error && (
             <p className="error-message" role="alert">

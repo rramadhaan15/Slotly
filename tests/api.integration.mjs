@@ -9,6 +9,10 @@ const cookies = login.headers
   .join('; ');
 assert.ok(cookies, 'local sign-in cookie');
 const call = async (data, cookie = cookies) => {
+  const payload =
+    data.action === 'hold' && data.duration === undefined
+      ? { ...data, duration: 1 }
+      : data;
   const r = await fetch(base + '/api/slotly', {
     method: 'POST',
     headers: {
@@ -16,7 +20,7 @@ const call = async (data, cookie = cookies) => {
       Cookie: cookie,
       Origin: base,
     },
-    body: JSON.stringify(data),
+    body: JSON.stringify(payload),
   });
   return { status: r.status, data: await r.json() };
 };

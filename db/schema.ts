@@ -14,6 +14,7 @@ export const bookings = sqliteTable(
     unit: text('unit').notNull(),
     date: text('date').notNull(),
     hour: integer('hour').notNull(),
+    duration: integer('duration').notNull().default(1),
     price: integer('price').notNull(),
     paid: integer('paid').notNull(),
     status: text('status').notNull().default('confirmed'),

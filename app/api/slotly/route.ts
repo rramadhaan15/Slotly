@@ -2,9 +2,10 @@ import { getSlotlyUser } from '@/lib/auth';
 import { database, adminIds } from '@/lib/db';
 import { venues, categories, type Venue } from '@/lib/catalog';
 import {
-  HOLD_SQL,
+  HOLD_RANGE_SQL,
   HOLD_SECONDS,
   validSlot,
+  validSlotRange,
   canCancel,
   contact,
   totals,
@@ -36,6 +37,51 @@ async function identity() {
   const user = await getSlotlyUser();
   if (!user) throw new ClientError('Silakan masuk untuk melanjutkan.', 401);
   return user;
+}
+async function holdRange(
+  db: D1Database,
+  {
+    venueId,
+    unit,
+    date,
+    hour,
+    duration,
+    userId,
+    holdId,
+    now,
+  }: {
+    venueId: string;
+    unit: string;
+    date: string;
+    hour: number;
+    duration: number;
+    userId: string;
+    holdId: string;
+    now: number;
+  },
+) {
+  const keyPrefix = [venueId, unit, date, ''].join('|');
+  const { results } = await db
+    .prepare(HOLD_RANGE_SQL)
+    .bind(
+      hour,
+      hour,
+      duration,
+      keyPrefix,
+      venueId,
+      unit,
+      date,
+      userId,
+      holdId,
+      now + HOLD_SECONDS,
+      venueId,
+      unit,
+      date,
+      now,
+      now,
+    )
+    .all<{ hour: number; hold_id: string; expires_at: number }>();
+  return results;
 }
 function fail(error: unknown) {
   if (error instanceof ClientError)
@@ -127,7 +173,7 @@ export async function GET(request: Request) {
     const transactions = isAdmin
       ? await db
           .prepare(
-            'SELECT id,venue_id,date,hour,price,paid,status,created_at FROM bookings ORDER BY created_at DESC LIMIT 100',
+            'SELECT id,venue_id,unit,date,hour,duration,price,paid,status,created_at FROM bookings ORDER BY created_at DESC LIMIT 100',
           )
           .all()
       : { results: [] };
@@ -194,13 +240,14 @@ export async function POST(request: Request) {
       return reply({ ok: true });
     }
     if (body.action === 'hold' || body.action === 'block') {
+      const duration = body.action === 'block' ? 1 : body.duration;
       if (
         !venue ||
         !venue.units.includes(body.unit) ||
-        !validSlot(body.date, body.hour)
+        !validSlotRange(body.date, body.hour, duration)
       )
         throw new ClientError(
-          'Pilih unit, tanggal, dan jam yang masih tersedia (maksimal 90 hari).',
+          'Pilih unit dan rentang waktu berurutan yang tersedia (maksimal 90 hari).',
         );
       if (body.action === 'block') {
         if (!adminIds().includes(user.userId))
@@ -208,7 +255,7 @@ export async function POST(request: Request) {
       }
       const active = await db
         .prepare(
-          "SELECT count(*) AS n FROM slot_claims WHERE user_id=? AND status='hold' AND expires_at>?",
+          "SELECT count(DISTINCT hold_id) AS n FROM slot_claims WHERE user_id=? AND status='hold' AND expires_at>?",
         )
         .bind(user.userId, now)
         .first<{ n: number }>();
@@ -217,24 +264,19 @@ export async function POST(request: Request) {
           'Selesaikan reservasi aktif sebelum memilih slot baru.',
           429,
         );
-      const key = [venue.id, body.unit, body.date, body.hour].join('|');
-      const held = await db
-        .prepare(HOLD_SQL)
-        .bind(
-          key,
-          venue.id,
-          body.unit,
-          body.date,
-          body.hour,
-          user.userId,
-          id,
-          now + HOLD_SECONDS,
-          now,
-        )
-        .first();
-      if (!held)
+      const held = await holdRange(db, {
+        venueId: venue.id,
+        unit: body.unit,
+        date: body.date,
+        hour: body.hour,
+        duration,
+        userId: user.userId,
+        holdId: id,
+        now,
+      });
+      if (held.length !== duration)
         throw new ClientError(
-          'Slot baru saja terisi. Silakan pilih jam lain.',
+          'Salah satu jam dalam rentang tersebut baru saja terisi. Silakan pilih waktu lain.',
           409,
         );
       if (body.action === 'block')
@@ -247,7 +289,8 @@ export async function POST(request: Request) {
       return reply({
         holdId: id,
         expiresAt: (now + HOLD_SECONDS) * 1000,
-        price: venue.price,
+        price: venue.price * duration,
+        duration,
       });
     }
     if (body.action === 'release') {
@@ -277,22 +320,28 @@ export async function POST(request: Request) {
       if (previous) return reply({ id: body.holdId });
       const held = await db
         .prepare(
-          "SELECT * FROM slot_claims WHERE hold_id=? AND user_id=? AND status='hold' AND expires_at>?",
+          "SELECT venue_id,unit,date,MIN(hour) AS hour,COUNT(*) AS duration FROM slot_claims WHERE hold_id=? AND user_id=? AND status='hold' AND expires_at>? GROUP BY hold_id,user_id,venue_id,unit,date",
         )
         .bind(body.holdId, user.userId, now)
-        .first<{ venue_id: string; date: string; hour: number }>();
-      if (!held || !validSlot(held.date, held.hour))
+        .first<{
+          venue_id: string;
+          unit: string;
+          date: string;
+          hour: number;
+          duration: number;
+        }>();
+      if (!held || !validSlotRange(held.date, held.hour, held.duration))
         throw new ClientError(
           'Waktu reservasi habis. Silakan pilih slot kembali.',
           409,
         );
       const target = list.find((v) => v.id === held.venue_id);
       if (!target) throw new ClientError('Tempat tidak tersedia.');
-      const cost = totals(target.price, body.payment);
+      const cost = totals(target.price * held.duration, body.payment);
       const result = await db.batch([
         db
           .prepare(
-            "INSERT INTO bookings(id,user_id,venue_id,unit,date,hour,price,paid,status,name,phone,created_at) SELECT hold_id,user_id,venue_id,unit,date,hour,?,?,'confirmed',?,?,? FROM slot_claims WHERE hold_id=? AND user_id=? AND status='hold' AND expires_at>? ON CONFLICT(id) DO NOTHING",
+            "INSERT INTO bookings(id,user_id,venue_id,unit,date,hour,duration,price,paid,status,name,phone,created_at) SELECT hold_id,user_id,venue_id,unit,date,MIN(hour),COUNT(*),?,?,'confirmed',?,?,? FROM slot_claims WHERE hold_id=? AND user_id=? AND status='hold' AND expires_at>? GROUP BY hold_id,user_id,venue_id,unit,date HAVING COUNT(*)=? ON CONFLICT(id) DO NOTHING",
           )
           .bind(
             cost.price,
@@ -303,6 +352,7 @@ export async function POST(request: Request) {
             body.holdId,
             user.userId,
             now,
+            held.duration,
           ),
         db
           .prepare(
@@ -341,11 +391,12 @@ export async function POST(request: Request) {
           unit: string;
           date: string;
           hour: number;
+          duration: number;
         }>();
       if (
         !booking ||
         !canCancel(booking.date, booking.hour) ||
-        !validSlot(body.date, body.hour)
+        !validSlotRange(body.date, body.hour, booking.duration)
       )
         throw new ClientError(
           'Perubahan jadwal tersedia minimal 24 jam sebelum kunjungan. Pilih jadwal baru yang valid.',
@@ -359,26 +410,25 @@ export async function POST(request: Request) {
         throw new ClientError(
           'Layanan ini tidak tersedia untuk perubahan jadwal.',
         );
-      const key = [booking.venue_id, booking.unit, body.date, body.hour].join(
-        '|',
-      );
+      const held = await holdRange(db, {
+        venueId: booking.venue_id,
+        unit: booking.unit,
+        date: body.date,
+        hour: body.hour,
+        duration: booking.duration,
+        userId: user.userId,
+        holdId: id,
+        now,
+      });
+      if (held.length !== booking.duration)
+        throw new ClientError(
+          'Rentang waktu baru tidak tersedia. Jadwal sebelumnya tetap tersimpan.',
+          409,
+        );
       const changed = await db.batch([
         db
-          .prepare(HOLD_SQL)
-          .bind(
-            key,
-            booking.venue_id,
-            booking.unit,
-            body.date,
-            body.hour,
-            user.userId,
-            id,
-            now + HOLD_SECONDS,
-            now,
-          ),
-        db
           .prepare(
-            "UPDATE bookings SET date=?,hour=? WHERE id=? AND user_id=? AND status='confirmed' AND date=? AND hour=? AND EXISTS(SELECT 1 FROM slot_claims WHERE hold_id=? AND user_id=? AND status='hold')",
+            "UPDATE bookings SET date=?,hour=? WHERE id=? AND user_id=? AND status='confirmed' AND date=? AND hour=? AND (SELECT COUNT(*) FROM slot_claims WHERE hold_id=? AND user_id=? AND status='hold' AND expires_at>?)=?",
           )
           .bind(
             body.date,
@@ -389,12 +439,14 @@ export async function POST(request: Request) {
             booking.hour,
             id,
             user.userId,
+            now,
+            booking.duration,
           ),
         db
           .prepare(
-            "DELETE FROM slot_claims WHERE hold_id=? AND user_id=? AND status='booked' AND EXISTS(SELECT 1 FROM bookings WHERE id=? AND date=? AND hour=? AND status='confirmed') AND EXISTS(SELECT 1 FROM slot_claims WHERE hold_id=?)",
+            "DELETE FROM slot_claims WHERE hold_id=? AND user_id=? AND status='booked' AND EXISTS(SELECT 1 FROM bookings WHERE id=? AND date=? AND hour=? AND status='confirmed')",
           )
-          .bind(booking.id, user.userId, booking.id, body.date, body.hour, id),
+          .bind(booking.id, user.userId, booking.id, body.date, body.hour),
         db
           .prepare(
             "UPDATE slot_claims SET status='booked',hold_id=? WHERE hold_id=? AND user_id=? AND EXISTS(SELECT 1 FROM bookings WHERE id=? AND date=? AND hour=? AND status='confirmed')",
@@ -402,7 +454,7 @@ export async function POST(request: Request) {
           .bind(booking.id, id, user.userId, booking.id, body.date, body.hour),
         db
           .prepare(
-            "INSERT INTO audit(id,user_id,booking_id,action,created_at) SELECT ?,?,?,?,? WHERE EXISTS(SELECT 1 FROM slot_claims WHERE id=? AND hold_id=? AND status='booked')",
+            "INSERT INTO audit(id,user_id,booking_id,action,created_at) SELECT ?,?,?,?,? WHERE EXISTS(SELECT 1 FROM bookings WHERE id=? AND date=? AND hour=? AND status='confirmed')",
           )
           .bind(
             id,
@@ -410,8 +462,9 @@ export async function POST(request: Request) {
             booking.id,
             'Jadwal reservasi diubah',
             now,
-            key,
             booking.id,
+            body.date,
+            body.hour,
           ),
         db
           .prepare(
@@ -419,7 +472,7 @@ export async function POST(request: Request) {
           )
           .bind(id, user.userId),
       ]);
-      if (!changed[1].meta.changes)
+      if (!changed[0].meta.changes)
         throw new ClientError(
           'Slot baru sudah terisi atau reservasi telah berubah. Jadwal sebelumnya tetap tersimpan.',
           409,
@@ -479,11 +532,16 @@ export async function POST(request: Request) {
           "SELECT * FROM bookings WHERE id=? AND user_id=? AND status='confirmed'",
         )
         .bind(String(body.bookingId), user.userId)
-        .first<{ venue_id: string; date: string; hour: number }>();
+        .first<{
+          venue_id: string;
+          date: string;
+          hour: number;
+          duration: number;
+        }>();
       if (
         !b ||
         Date.parse(
-          `${b.date}T${String(b.hour + 1).padStart(2, '0')}:00:00+07:00`,
+          `${b.date}T${String(b.hour + b.duration).padStart(2, '0')}:00:00+07:00`,
         ) > Date.now()
       )
         throw new ClientError('Ulasan tersedia setelah jadwal selesai.');
