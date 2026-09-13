@@ -1,8 +1,4 @@
-import {
-  clearSessionCookie,
-  readSessionToken,
-  tokenHash,
-} from '@/lib/auth';
+import { clearSessionCookie, readSessionToken, tokenHash } from '@/lib/auth';
 import { database } from '@/lib/db';
 
 export async function POST(request: Request) {

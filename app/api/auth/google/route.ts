@@ -6,7 +6,10 @@ const VERIFIER_COOKIE = 'slotly_google_verifier';
 function base64Url(bytes: Uint8Array) {
   let binary = '';
   for (const byte of bytes) binary += String.fromCharCode(byte);
-  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  return btoa(binary)
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/, '');
 }
 
 function oauthCookie(name: string, value: string, secure: boolean) {
@@ -17,14 +20,20 @@ function oauthCookie(name: string, value: string, secure: boolean) {
     'SameSite=Lax',
     'Max-Age=600',
     secure ? 'Secure' : '',
-  ].filter(Boolean).join('; ');
+  ]
+    .filter(Boolean)
+    .join('; ');
 }
 
 export async function GET(request: Request) {
-  const clientId = (env as unknown as { GOOGLE_CLIENT_ID?: string }).GOOGLE_CLIENT_ID;
+  const clientId = (env as unknown as { GOOGLE_CLIENT_ID?: string })
+    .GOOGLE_CLIENT_ID;
   const current = new URL(request.url);
   if (!clientId)
-    return Response.redirect(new URL('/signin?error=google_not_configured', current), 302);
+    return Response.redirect(
+      new URL('/signin?error=google_not_configured', current),
+      302,
+    );
 
   const secure = current.protocol === 'https:';
   const state = base64Url(crypto.getRandomValues(new Uint8Array(24)));
@@ -48,7 +57,13 @@ export async function GET(request: Request) {
   }).toString();
 
   const response = Response.redirect(google, 302);
-  response.headers.append('Set-Cookie', oauthCookie(STATE_COOKIE, state, secure));
-  response.headers.append('Set-Cookie', oauthCookie(VERIFIER_COOKIE, verifier, secure));
+  response.headers.append(
+    'Set-Cookie',
+    oauthCookie(STATE_COOKIE, state, secure),
+  );
+  response.headers.append(
+    'Set-Cookie',
+    oauthCookie(VERIFIER_COOKIE, verifier, secure),
+  );
   return response;
 }

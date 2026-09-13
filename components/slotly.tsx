@@ -12,7 +12,6 @@ import {
   Heart,
   Compass,
   CalendarDays,
-  LayoutDashboard,
   ShieldCheck,
   CircleHelp,
   Sparkles,
@@ -43,8 +42,8 @@ import { Choice, api, type Booking, type Notification } from './shared';
 import { BookingFlow } from './booking-flow';
 import {
   BookingHistory,
-  MerchantDashboard,
-  type Merchant,
+  AdminDashboard,
+  type ManagedVenue,
 } from './account-views';
 import { InfoDialog } from './info-dialog';
 import { SlotlyLogo } from './slotly-logo';
@@ -54,10 +53,8 @@ type AppData = {
   bookings: Booking[];
   favorites: string[];
   notifications: Notification[];
-  merchant: Merchant | null;
-  merchantBookings: Booking[];
   isAdmin: boolean;
-  applications: Merchant[];
+  managedVenues: ManagedVenue[];
   transactions: Booking[];
   commission: number;
   reviewed: string[];
@@ -67,10 +64,6 @@ const navigation: [LucideIcon, string][] = [
   [Compass, 'Jelajahi'],
   [CalendarDays, 'Booking Saya'],
   [Heart, 'Favorit'],
-];
-const businessNav: [LucideIcon, string][] = [
-  [LayoutDashboard, 'Dashboard Merchant'],
-  [ShieldCheck, 'Admin Platform'],
 ];
 export default function Slotly() {
   const [page, setPage] = useState('Jelajahi');
@@ -82,10 +75,8 @@ export default function Slotly() {
     bookings: [],
     favorites: [],
     notifications: [],
-    merchant: null,
-    merchantBookings: [],
     isAdmin: false,
-    applications: [],
+    managedVenues: [],
     transactions: [],
     commission: 5,
     reviewed: [],
@@ -157,19 +148,22 @@ export default function Slotly() {
     );
   };
   useEffect(() => {
-    const v = new URLSearchParams(window.location.search).get('view');
-    if (
-      v &&
-      [
-        'Jelajahi',
-        'Booking Saya',
-        'Favorit',
-        'Dashboard Merchant',
-        'Admin Platform',
-      ].includes(v)
-    )
-      queueMicrotask(() => setPage(v));
-  }, []);
+    if (loading) return;
+    const requested = new URLSearchParams(window.location.search).get('view');
+    const publicPages = ['Jelajahi', 'Booking Saya', 'Favorit'];
+    if (requested && publicPages.includes(requested)) {
+      queueMicrotask(() => setPage(requested));
+      return;
+    }
+    if (requested === 'Admin Platform' && data.isAdmin) {
+      queueMicrotask(() => setPage(requested));
+      return;
+    }
+    if (requested || (page === 'Admin Platform' && !data.isAdmin)) {
+      window.history.replaceState({}, '', '/dashboard');
+      queueMicrotask(() => setPage('Jelajahi'));
+    }
+  }, [data.isAdmin, loading, page]);
   const filtered = data.venues
     .filter(
       (v) =>
@@ -272,33 +266,20 @@ export default function Slotly() {
               </button>
             ))}
           </nav>
-          <p className="nav-label second">RUANG USAHA</p>
-          <nav>
-            {businessNav.map(([Icon, label]) => (
-              <button
-                key={label}
-                onClick={() => navigate(label)}
-                className={`nav-item ${page === label ? 'active' : ''}`}
-              >
-                <Icon size={20} />
-                {label}
-              </button>
-            ))}
-          </nav>
-          <div className="merchant-invite">
-            <span className="invite-icon">
-              <Sparkles size={20} />
-            </span>
-            <h3>Punya tempat usaha?</h3>
-            <p>
-              Isi lebih banyak slot.
-              <br />
-              Jangkau lebih banyak pelanggan.
-            </p>
-            <button onClick={() => navigate('Dashboard Merchant')}>
-              Jadi partner Slotly <ArrowUpRight size={16} />
-            </button>
-          </div>
+          {data.isAdmin && (
+            <>
+              <p className="nav-label second">ADMINISTRASI</p>
+              <nav>
+                <button
+                  onClick={() => navigate('Admin Platform')}
+                  className={`nav-item ${page === 'Admin Platform' ? 'active' : ''}`}
+                >
+                  <ShieldCheck size={20} />
+                  Admin Platform
+                </button>
+              </nav>
+            </>
+          )}
         </SidebarContent>
         <SidebarFooter>
           <button className="nav-item" onClick={() => setInfo('Bantuan')}>
@@ -625,14 +606,10 @@ export default function Slotly() {
               reviewed={data.reviewed ?? []}
             />
           )}
-          {(page === 'Dashboard Merchant' || page === 'Admin Platform') && (
-            <MerchantDashboard
-              admin={page === 'Admin Platform'}
-              merchant={data.merchant}
-              bookings={data.merchantBookings ?? []}
+          {page === 'Admin Platform' && data.isAdmin && (
+            <AdminDashboard
               refresh={refresh}
-              isAdmin={data.isAdmin}
-              applications={data.applications ?? []}
+              managedVenues={data.managedVenues ?? []}
               transactions={data.transactions ?? []}
               commission={data.commission ?? 5}
             />

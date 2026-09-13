@@ -62,10 +62,8 @@ export async function GET(request: Request) {
         bookings: [],
         favorites: [],
         notifications: [],
-        merchant: null,
-        merchantBookings: [],
         isAdmin: false,
-        applications: [],
+        managedVenues: [],
         transactions: [],
         commission: 5,
         reviewed: [],
@@ -93,11 +91,11 @@ export async function GET(request: Request) {
         bookings: [],
         favorites: [],
         notifications: [],
-        merchant: null,
         isAdmin: false,
+        managedVenues: [],
       });
     const isAdmin = adminIds().includes(user.userId);
-    const [bookings, favorites, events, merchant, reviews] = await Promise.all([
+    const [bookings, favorites, events, reviews] = await Promise.all([
       db
         .prepare(
           'SELECT * FROM bookings WHERE user_id=? ORDER BY created_at DESC',
@@ -115,26 +113,14 @@ export async function GET(request: Request) {
         .bind(user.userId)
         .all(),
       db
-        .prepare('SELECT * FROM merchants WHERE user_id=?')
-        .bind(user.userId)
-        .first<{ id: string; data: string; status: string }>(),
-      db
         .prepare('SELECT booking_id FROM reviews WHERE user_id=?')
         .bind(user.userId)
         .all(),
     ]);
-    const merchantBookings = merchant
+    const managedVenues = isAdmin
       ? await db
           .prepare(
-            'SELECT * FROM bookings WHERE venue_id=? ORDER BY created_at DESC',
-          )
-          .bind(merchant.id)
-          .all()
-      : { results: [] };
-    const pending = isAdmin
-      ? await db
-          .prepare(
-            'SELECT id,data,status,created_at FROM merchants ORDER BY created_at DESC',
+            "SELECT id,data,status,created_at FROM merchants WHERE status='approved' ORDER BY created_at DESC",
           )
           .all()
       : { results: [] };
@@ -155,11 +141,7 @@ export async function GET(request: Request) {
       bookings: bookings.results,
       favorites: favorites.results.map((f) => f.venue_id),
       notifications: events.results,
-      merchant: merchant
-        ? { ...merchant, data: JSON.parse(merchant.data) }
-        : null,
-      merchantBookings: merchantBookings.results,
-      applications: pending.results.map((m) => ({
+      managedVenues: managedVenues.results.map((m) => ({
         ...m,
         data: JSON.parse(String(m.data)),
       })),
@@ -221,17 +203,8 @@ export async function POST(request: Request) {
           'Pilih unit, tanggal, dan jam yang masih tersedia (maksimal 90 hari).',
         );
       if (body.action === 'block') {
-        const owned = await db
-          .prepare(
-            "SELECT id FROM merchants WHERE id=? AND user_id=? AND status='approved'",
-          )
-          .bind(venue.id, user.userId)
-          .first();
-        if (!owned)
-          throw new ClientError(
-            'Anda tidak memiliki akses ke tempat ini.',
-            403,
-          );
+        if (!adminIds().includes(user.userId))
+          throw new ClientError('Akses hanya untuk admin platform.', 403);
       }
       const active = await db
         .prepare(
@@ -460,14 +433,8 @@ export async function POST(request: Request) {
         !validSlot(body.date, body.hour)
       )
         throw new ClientError('Pilih unit, tanggal, dan jam yang valid.');
-      const owned = await db
-        .prepare(
-          "SELECT id FROM merchants WHERE id=? AND user_id=? AND status='approved'",
-        )
-        .bind(venue.id, user.userId)
-        .first();
-      if (!owned)
-        throw new ClientError('Anda tidak memiliki akses ke tempat ini.', 403);
+      if (!adminIds().includes(user.userId))
+        throw new ClientError('Akses hanya untuk admin platform.', 403);
       const result = await db
         .prepare(
           "DELETE FROM slot_claims WHERE venue_id=? AND unit=? AND date=? AND hour=? AND user_id=? AND status='blocked'",
@@ -546,6 +513,14 @@ export async function POST(request: Request) {
       return reply({ ok: true });
     }
     if (body.action === 'merchant') {
+      throw new ClientError(
+        'Pendaftaran merchant tidak tersedia. Tempat hanya dapat ditambahkan admin.',
+        403,
+      );
+    }
+    if (body.action === 'adminVenue') {
+      if (!adminIds().includes(user.userId))
+        throw new ClientError('Akses hanya untuk admin platform.', 403);
       if (
         typeof body.name !== 'string' ||
         body.name.trim().length < 3 ||
@@ -566,11 +541,10 @@ export async function POST(request: Request) {
         body.units.some(
           (u: unknown) => typeof u !== 'string' || !u.trim() || u.length > 60,
         ) ||
-        new Set(body.units).size !== body.units.length ||
-        !/^\d{13}$/.test(body.nib)
+        new Set(body.units).size !== body.units.length
       )
         throw new ClientError(
-          'Lengkapi profil usaha, minimal satu unit, dan NIB 13 digit.',
+          'Lengkapi data tempat dan minimal satu unit yang unik.',
         );
       const data = {
         name: body.name.trim(),
@@ -588,17 +562,12 @@ export async function POST(request: Request) {
         reviews: 0,
         distance: 0,
         tag: 'Baru',
-        nib: body.nib,
       };
-      const existing = await db
-        .prepare('SELECT id FROM merchants WHERE user_id=?')
-        .bind(user.userId)
-        .first<{ id: string }>();
       await db
         .prepare(
-          "INSERT INTO merchants(id,user_id,data,status,created_at) VALUES(?,?,?,'pending',?) ON CONFLICT(user_id) DO UPDATE SET data=excluded.data,status='pending'",
+          "INSERT INTO merchants(id,user_id,data,status,created_at) VALUES(?,?,?,'approved',?)",
         )
-        .bind(existing?.id ?? id, user.userId, JSON.stringify(data), now)
+        .bind(id, `${user.userId}:${id}`, JSON.stringify(data), now)
         .run();
       return reply({ ok: true });
     }

@@ -34,6 +34,24 @@ try {
     403,
   );
   assert.equal(
+    (await call({ action: 'merchant', name: 'Usaha pengguna' })).status,
+    403,
+  );
+  assert.equal(
+    (
+      await call({
+        action: 'adminVenue',
+        name: 'Venue tanpa izin',
+        category: 'Olahraga',
+        price: 100000,
+        area: 'Kemang',
+        description: 'Venue ini tidak boleh dibuat oleh pengguna biasa.',
+        units: ['Lapangan A'],
+      })
+    ).status,
+    403,
+  );
+  assert.equal(
     (
       await call({
         action: 'hold',
@@ -95,17 +113,53 @@ try {
     ).status,
     400,
   );
-  const occupied = await call({action:'hold',venueId:'padel',unit:'Court C',date,hour:9});
-  assert.equal(occupied.status,200);
-  assert.equal((await call({action:'reschedule',bookingId:hold.holdId,date,hour:9})).status,409);
-  const unchanged=await(await fetch(base+'/api/slotly',{headers:{Cookie:cookies}})).json();
-  assert.equal(unchanged.bookings.find(b=>b.id===hold.holdId).hour,8);
-  await call({action:'release',holdId:occupied.data.holdId});
-  assert.equal((await call({action:'reschedule',bookingId:hold.holdId,date,hour:9})).status,200);
-  const moved=await(await fetch(base+'/api/slotly',{headers:{Cookie:cookies}})).json();
-  assert.equal(moved.bookings.find(b=>b.id===hold.holdId).hour,9);
-  const newSlot=await call({action:'hold',venueId:'padel',unit:'Court C',date,hour:9});
-  assert.equal(newSlot.status,409);
+  const occupied = await call({
+    action: 'hold',
+    venueId: 'padel',
+    unit: 'Court C',
+    date,
+    hour: 9,
+  });
+  assert.equal(occupied.status, 200);
+  assert.equal(
+    (
+      await call({
+        action: 'reschedule',
+        bookingId: hold.holdId,
+        date,
+        hour: 9,
+      })
+    ).status,
+    409,
+  );
+  const unchanged = await (
+    await fetch(base + '/api/slotly', { headers: { Cookie: cookies } })
+  ).json();
+  assert.equal(unchanged.bookings.find((b) => b.id === hold.holdId).hour, 8);
+  await call({ action: 'release', holdId: occupied.data.holdId });
+  assert.equal(
+    (
+      await call({
+        action: 'reschedule',
+        bookingId: hold.holdId,
+        date,
+        hour: 9,
+      })
+    ).status,
+    200,
+  );
+  const moved = await (
+    await fetch(base + '/api/slotly', { headers: { Cookie: cookies } })
+  ).json();
+  assert.equal(moved.bookings.find((b) => b.id === hold.holdId).hour, 9);
+  const newSlot = await call({
+    action: 'hold',
+    venueId: 'padel',
+    unit: 'Court C',
+    date,
+    hour: 9,
+  });
+  assert.equal(newSlot.status, 409);
   assert.equal(
     (await call({ action: 'cancel', bookingId: hold.holdId })).status,
     200,

@@ -282,10 +282,7 @@ export function BookingFlow({
                     )}
                   </button>
                 ) : (
-                  <Link
-                    className="primary"
-                    href="/signin"
-                  >
+                  <Link className="primary" href="/signin">
                     Masuk untuk reservasi
                   </Link>
                 )}

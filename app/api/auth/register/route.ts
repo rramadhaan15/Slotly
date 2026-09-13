@@ -10,16 +10,24 @@ export async function POST(request: Request) {
     if (Number(request.headers.get('content-length') ?? 0) > 8000)
       return reply({ error: 'Data terlalu besar.' }, 413);
     const body = (await request.json()) as Record<string, unknown>;
-    const username = typeof body.username === 'string' ? body.username.trim() : '';
-    const email = typeof body.email === 'string' ? body.email.trim().toLowerCase() : '';
+    const username =
+      typeof body.username === 'string' ? body.username.trim() : '';
+    const email =
+      typeof body.email === 'string' ? body.email.trim().toLowerCase() : '';
     const password = typeof body.password === 'string' ? body.password : '';
 
     if (!/^[\p{L}\p{N}_. -]{3,40}$/u.test(username))
-      return reply({ error: 'Username harus terdiri dari 3–40 karakter.' }, 400);
+      return reply(
+        { error: 'Username harus terdiri dari 3–40 karakter.' },
+        400,
+      );
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254)
       return reply({ error: 'Masukkan alamat email yang valid.' }, 400);
     if (password.length < 8 || password.length > 128)
-      return reply({ error: 'Password harus terdiri dari 8–128 karakter.' }, 400);
+      return reply(
+        { error: 'Password harus terdiri dari 8–128 karakter.' },
+        400,
+      );
 
     const db = database();
     const existing = await db
@@ -49,16 +57,20 @@ export async function POST(request: Request) {
       return reply({ error: 'Username atau email sudah digunakan.' }, 409);
     }
     const token = await createSession(db, userId);
-    return reply(
-      { ok: true },
-      201,
-      { 'Set-Cookie': sessionCookie(token, new URL(request.url).protocol === 'https:') },
-    );
+    return reply({ ok: true }, 201, {
+      'Set-Cookie': sessionCookie(
+        token,
+        new URL(request.url).protocol === 'https:',
+      ),
+    });
   } catch (error) {
     console.error(
       'Registration failed',
       error instanceof Error ? error.message : 'Unknown error',
     );
-    return reply({ error: 'Pendaftaran belum berhasil. Silakan coba lagi.' }, 500);
+    return reply(
+      { error: 'Pendaftaran belum berhasil. Silakan coba lagi.' },
+      500,
+    );
   }
 }

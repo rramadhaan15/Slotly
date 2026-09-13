@@ -10,7 +10,6 @@ import {
   Clock,
   Download,
   Plus,
-  ShieldCheck,
   Store,
   Star,
   Check,
@@ -230,7 +229,13 @@ export function BookingHistory({
           </button>
         </div>
       )}
-      {reschedule && <RescheduleDialog booking={reschedule} onClose={()=>setReschedule(null)} onSaved={refresh}/>}
+      {reschedule && (
+        <RescheduleDialog
+          booking={reschedule}
+          onClose={() => setReschedule(null)}
+          onSaved={refresh}
+        />
+      )}
       <AlertDialog
         open={!!cancel}
         onOpenChange={(v) => !v && !busy && setCancel(null)}
@@ -303,37 +308,26 @@ export function BookingHistory({
     </section>
   );
 }
-export type Merchant = {
+export type ManagedVenue = {
   id: string;
   status: string;
-  data: Venue & { nib: string };
+  data: Venue;
 };
-export function MerchantDashboard({
-  merchant,
-  bookings,
+export function AdminDashboard({
   refresh,
-  isAdmin,
-  applications,
+  managedVenues,
   transactions,
   commission,
-  admin = false,
 }: {
-  merchant: Merchant | null;
-  bookings: Booking[];
   refresh: () => void;
-  isAdmin: boolean;
-  applications: Merchant[];
+  managedVenues: ManagedVenue[];
   transactions: Booking[];
   commission: number;
-  admin?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const [cat, setCat] = useState('Olahraga');
-  const [blockDate, setBlockDate] = useState(today());
-  const [blockUnit, setBlockUnit] = useState(merchant?.data.units[0] ?? '');
-  const [blockHour, setBlockHour] = useState('8');
   const [feedback, setFeedback] = useState('');
   const [fee, setFee] = useState(commission);
   const run = async (payload: Record<string, unknown>) => {
@@ -357,7 +351,7 @@ export function MerchantDashboard({
     const f = new FormData(e.currentTarget);
     if (
       await run({
-        action: 'merchant',
+        action: 'adminVenue',
         name: f.get('name'),
         category: cat,
         price: Number(f.get('price')),
@@ -367,12 +361,11 @@ export function MerchantDashboard({
           .split(',')
           .map((u) => u.trim())
           .filter(Boolean),
-        nib: f.get('nib'),
       })
     )
       setOpen(false);
   };
-  const rows = admin ? transactions : bookings;
+  const rows = transactions;
   const active = rows.filter((b) => b.status === 'confirmed');
   const revenue = active.reduce((s, b) => s + b.paid, 0);
   const dates = Array.from({ length: 7 }, (_, i) => {
@@ -431,23 +424,11 @@ export function MerchantDashboard({
     <section>
       <div className="view-heading">
         <div>
-          <p className="eyebrow">
-            {admin ? 'KELOLA PLATFORM' : 'RUANG UNTUK USAHAMU'}
-          </p>
-          <h1>
-            {admin
-              ? 'Admin platform'
-              : merchant
-                ? merchant.data.name
-                : 'Tumbuh bersama Slotly.'}
-          </h1>
-          <p>
-            {admin
-              ? 'Verifikasi mitra dan pantau transaksi platform.'
-              : 'Jadwal lebih rapi. Lebih banyak waktu untuk pelanggan.'}
-          </p>
+          <p className="eyebrow">KELOLA PLATFORM</p>
+          <h1>Admin platform</h1>
+          <p>Tambahkan tempat dan pantau transaksi platform.</p>
         </div>
-        {(!admin || isAdmin) && (
+        <div className="view-actions">
           <button
             className="outline"
             onClick={exportCsv}
@@ -456,318 +437,167 @@ export function MerchantDashboard({
             <Download size={16} />
             Unduh CSV
           </button>
+          <button className="primary" onClick={() => setOpen(true)}>
+            <Plus size={17} />
+            Tambah tempat
+          </button>
+        </div>
+      </div>
+      {error && (
+        <p role="alert" className="error-message">
+          {error}
+        </p>
+      )}
+      {feedback && <output className="success-message">{feedback}</output>}
+      <div className="stat-grid">
+        {[
+          [Ticket, 'Total booking', String(rows.length), 'Reservasi tercatat'],
+          [
+            Wallet,
+            'Pendapatan simulasi',
+            money(revenue),
+            'Belum ada pembayaran riil',
+          ],
+          [
+            CalendarDays,
+            'Booking hari ini',
+            String(active.filter((b) => b.date === today()).length),
+            'Sesuai jadwal reservasi',
+          ],
+          [
+            TrendingUp,
+            'Komisi platform',
+            commission + '%',
+            'Dari nilai transaksi',
+          ],
+        ].map(([Icon, title, value, caption]) => {
+          const I = Icon as typeof Ticket;
+          return (
+            <div className="stat-card" key={String(title)}>
+              <span>
+                <I size={18} />
+                {String(title)}
+              </span>
+              <strong>{String(value)}</strong>
+              <small>{String(caption)}</small>
+            </div>
+          );
+        })}
+      </div>
+      <div className="dashboard-grid">
+        <div className="panel">
+          <div className="panel-heading">
+            <h2>Aktivitas reservasi</h2>
+            <span>7 hari terakhir</span>
+          </div>
+          <div className="chart">
+            {dates.map((d, i) => (
+              <div key={d} className="chart-column">
+                <span>{values[i]}</span>
+                <div className="chart-track">
+                  <div style={{ height: `${(values[i] / max) * 100}%` }} />
+                </div>
+                <small>
+                  {new Date(d + 'T12:00:00').toLocaleDateString('id-ID', {
+                    weekday: 'short',
+                  })}
+                </small>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="panel">
+          <h2>Pengaturan komisi</h2>
+          <p className="muted">Berlaku untuk perhitungan komisi platform.</p>
+          <label className="field-label">
+            Persentase komisi
+            <input
+              className="text-input"
+              type="number"
+              min={0}
+              max={30}
+              value={fee}
+              onChange={(e) => setFee(Number(e.target.value))}
+            />
+          </label>
+          <button
+            className="primary"
+            disabled={busy}
+            onClick={() => run({ action: 'commission', value: fee })}
+          >
+            Simpan komisi
+          </button>
+        </div>
+      </div>
+      <div className="panel">
+        <div className="panel-heading">
+          <h2>Tempat yang ditambahkan admin</h2>
+          <span>{managedVenues.length} tempat</span>
+        </div>
+        {managedVenues.length === 0 ? (
+          <div className="panel-empty">
+            <Store size={30} />
+            <p>Belum ada tempat tambahan.</p>
+          </div>
+        ) : (
+          managedVenues.map((m) => (
+            <div className="application" key={m.id}>
+              <div>
+                <h3>{m.data.name}</h3>
+                <p>
+                  {m.data.category} · {m.data.area} · {m.data.units.length} unit
+                  · {money(m.data.price)}/jam
+                </p>
+                <span className="status approved">Aktif</span>
+              </div>
+            </div>
+          ))
         )}
       </div>
-      {admin && !isAdmin ? (
-        <div className="empty-state">
-          <ShieldCheck size={38} />
-          <h3>Akses admin dibatasi</h3>
-          <p>Hanya akun admin terdaftar yang dapat mengelola platform.</p>
-          <span className="fine-print">Hak akses diperiksa di server.</span>
+      <div className="panel">
+        <div className="panel-heading">
+          <h2>Reservasi terbaru</h2>
+          <span>{rows.length} transaksi</span>
         </div>
-      ) : (
-        <>
-          {error && (
-            <p role="alert" className="error-message">
-              {error}
-            </p>
-          )}
-          {feedback && <output className="success-message">{feedback}</output>}
-          {!admin && !merchant && (
-            <div className="onboarding-banner">
-              <div>
-                <span className="eyebrow">PARTNER SLOTLY</span>
-                <h2>Tempatmu, pengalaman baru mereka.</h2>
-                <p>
-                  Daftarkan usaha, tambah unit, dan mulai menerima reservasi
-                  setelah verifikasi.
-                </p>
-                <button className="primary" onClick={() => setOpen(true)}>
-                  Daftarkan usahamu <ArrowUpRight size={18} />
-                </button>
-              </div>
-              <Store size={100} strokeWidth={1} />
-            </div>
-          )}
-          {merchant && !admin && (
-            <div className="merchant-status">
-              <span className={`status ${merchant.status}`}>
-                {merchant.status === 'pending'
-                  ? 'Menunggu verifikasi'
-                  : merchant.status === 'approved'
-                    ? 'Usaha aktif'
-                    : 'Perlu perbaikan'}
-              </span>
-              <span>
-                {merchant.data.area} · {merchant.data.units.length} unit ·{' '}
-                {money(merchant.data.price)}/jam
-              </span>
-              <button
-                className="text-button"
-                onClick={() => {
-                  setCat(merchant.data.category);
-                  setOpen(true);
-                }}
-              >
-                Edit profil
-              </button>
-            </div>
-          )}
-          <div className="stat-grid">
-            {[
-              [
-                Ticket,
-                'Total booking',
-                String(rows.length),
-                'Reservasi tercatat',
-              ],
-              [
-                Wallet,
-                'Pendapatan simulasi',
-                money(revenue),
-                'Belum ada pembayaran riil',
-              ],
-              [
-                CalendarDays,
-                'Booking hari ini',
-                String(active.filter((b) => b.date === today()).length),
-                'Sesuai jadwal reservasi',
-              ],
-              [
-                TrendingUp,
-                admin ? 'Komisi platform' : 'Unit aktif',
-                admin
-                  ? commission + '%'
-                  : String(
-                      merchant?.status === 'approved'
-                        ? merchant.data.units.length
-                        : 0,
-                    ),
-                admin ? 'Dari nilai transaksi' : 'Setelah verifikasi',
-              ],
-            ].map(([Icon, title, value, caption]) => {
-              const I = Icon as typeof Ticket;
-              return (
-                <div className="stat-card" key={String(title)}>
-                  <span>
-                    <I size={18} />
-                    {String(title)}
-                  </span>
-                  <strong>{String(value)}</strong>
-                  <small>{String(caption)}</small>
-                </div>
-              );
-            })}
+        {rows.length === 0 ? (
+          <div className="panel-empty">
+            <Ticket size={30} />
+            <p>Reservasi pertama akan muncul di sini.</p>
           </div>
-          <div className="dashboard-grid">
-            <div className="panel">
-              <div className="panel-heading">
-                <h2>Aktivitas reservasi</h2>
-                <span>7 hari terakhir</span>
-              </div>
-              <div className="chart">
-                {dates.map((d, i) => (
-                  <div key={d} className="chart-column">
-                    <span>{values[i]}</span>
-                    <div className="chart-track">
-                      <div style={{ height: `${(values[i] / max) * 100}%` }} />
-                    </div>
-                    <small>
-                      {new Date(d + 'T12:00:00').toLocaleDateString('id-ID', {
-                        weekday: 'short',
-                      })}
-                    </small>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div className="panel">
-              <h2>{admin ? 'Pengaturan komisi' : 'Blokir slot manual'}</h2>
-              {admin ? (
-                <>
-                  <p className="muted">
-                    Berlaku untuk perhitungan komisi platform.
-                  </p>
-                  <label className="field-label">
-                    Persentase komisi
-                    <input
-                      className="text-input"
-                      type="number"
-                      min={0}
-                      max={30}
-                      value={fee}
-                      onChange={(e) => setFee(Number(e.target.value))}
-                    />
-                  </label>
-                  <button
-                    className="primary"
-                    disabled={busy}
-                    onClick={() => run({ action: 'commission', value: fee })}
-                  >
-                    Simpan komisi
-                  </button>
-                </>
-              ) : merchant?.status === 'approved' ? (
-                <>
-                  <p className="muted">
-                    Tutup waktu untuk perawatan atau reservasi offline.
-                  </p>
-                  <input
-                    aria-label="Tanggal blokir"
-                    className="text-input"
-                    type="date"
-                    min={today()}
-                    value={blockDate}
-                    onChange={(e) => setBlockDate(e.target.value)}
-                  />
-                  <Choice
-                    label="Unit yang diblokir"
-                    value={blockUnit || merchant.data.units[0]}
-                    onChange={setBlockUnit}
-                    options={merchant.data.units.map((u) => ({
-                      value: u,
-                      label: u,
-                    }))}
-                  />
-                  <Choice
-                    label="Jam blokir"
-                    value={blockHour}
-                    onChange={setBlockHour}
-                    options={Array.from({ length: 14 }, (_, i) => ({
-                      value: String(i + 8),
-                      label: `${i + 8}.00 WIB`,
-                    }))}
-                  />
-                  <button
-                    className="primary"
-                    disabled={busy}
-                    onClick={() =>
-                      run({
-                        action: 'block',
-                        venueId: merchant.id,
-                        date: blockDate,
-                        unit: blockUnit || merchant.data.units[0],
-                        hour: Number(blockHour),
-                      })
-                    }
-                  >
-                    Blokir 1 jam
-                  </button>
-                  <button className="outline full-width" disabled={busy} onClick={()=>run({action:'unblock',venueId:merchant.id,date:blockDate,unit:blockUnit||merchant.data.units[0],hour:Number(blockHour)})}>Buka slot kembali</button>
-                </>
-              ) : (
-                <div className="panel-empty">
-                  <Clock size={30} />
-                  <p>Pengaturan jadwal tersedia setelah usahamu disetujui.</p>
-                </div>
-              )}
-            </div>
-          </div>
-          {admin && (
-            <div className="panel">
-              <h2>Verifikasi merchant</h2>
-              {applications.length === 0 ? (
-                <p className="muted">Belum ada pendaftaran merchant.</p>
-              ) : (
-                applications.map((m) => (
-                  <div className="application" key={m.id}>
-                    <div>
-                      <h3>{m.data.name}</h3>
-                      <p>
-                        {m.data.category} · {m.data.area} · NIB {m.data.nib}
-                      </p>
-                      <span className="status">{m.status}</span>
-                    </div>
-                    {m.status === 'pending' && (
-                      <div>
-                        <button
-                          className="outline danger"
-                          disabled={busy}
-                          onClick={() =>
-                            run({
-                              action: 'approve',
-                              merchantId: m.id,
-                              status: 'rejected',
-                            })
-                          }
-                        >
-                          Tolak
-                        </button>
-                        <button
-                          className="primary"
-                          disabled={busy}
-                          onClick={() =>
-                            run({
-                              action: 'approve',
-                              merchantId: m.id,
-                              status: 'approved',
-                            })
-                          }
-                        >
-                          Setujui
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                ))
-              )}
-            </div>
-          )}
-          <div className="panel">
-            <div className="panel-heading">
-              <h2>Reservasi terbaru</h2>
-              <span>{rows.length} transaksi</span>
-            </div>
-            {rows.length === 0 ? (
-              <div className="panel-empty">
-                <Ticket size={30} />
-                <p>Reservasi pertama akan muncul di sini.</p>
-              </div>
-            ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    {[
-                      'Kode',
-                      'Tanggal',
-                      'Waktu',
-                      'Status',
-                      'Total simulasi',
-                    ].map((h) => (
-                      <TableHead key={h}>{h}</TableHead>
-                    ))}
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {rows.map((b) => (
-                    <TableRow key={b.id}>
-                      <TableCell>SL-{b.id.slice(0, 8).toUpperCase()}</TableCell>
-                      <TableCell>{dateLabel(b.date)}</TableCell>
-                      <TableCell>{b.hour}.00 WIB</TableCell>
-                      <TableCell>
-                        <span className={`status ${b.status}`}>
-                          {b.status === 'confirmed'
-                            ? 'Dikonfirmasi'
-                            : 'Dibatalkan'}
-                        </span>
-                      </TableCell>
-                      <TableCell>{money(b.price)}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            )}
-          </div>
-        </>
-      )}
+        ) : (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                {['Kode', 'Tanggal', 'Waktu', 'Status', 'Total simulasi'].map(
+                  (h) => (
+                    <TableHead key={h}>{h}</TableHead>
+                  ),
+                )}
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {rows.map((b) => (
+                <TableRow key={b.id}>
+                  <TableCell>SL-{b.id.slice(0, 8).toUpperCase()}</TableCell>
+                  <TableCell>{dateLabel(b.date)}</TableCell>
+                  <TableCell>{b.hour}.00 WIB</TableCell>
+                  <TableCell>
+                    <span className={`status ${b.status}`}>
+                      {b.status === 'confirmed' ? 'Dikonfirmasi' : 'Dibatalkan'}
+                    </span>
+                  </TableCell>
+                  <TableCell>{money(b.price)}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        )}
+      </div>
       <Dialog open={open} onOpenChange={(v) => !busy && setOpen(v)}>
         <DialogContent className="standard-dialog">
-          <DialogTitle>
-            {merchant ? 'Edit profil usaha' : 'Mulai perjalanan usahamu'}
-          </DialogTitle>
+          <DialogTitle>Tambah tempat</DialogTitle>
           <DialogDescription>
-            Profil akan diperiksa admin sebelum muncul di pencarian. Perubahan
-            profil memerlukan verifikasi ulang.
+            Tempat akan langsung aktif dan muncul di halaman pencarian.
           </DialogDescription>
           <form onSubmit={submit} className="merchant-form">
             <label>
@@ -777,7 +607,6 @@ export function MerchantDashboard({
                 name="name"
                 minLength={3}
                 maxLength={100}
-                defaultValue={merchant?.data.name}
                 placeholder="Contoh: Arena Padel Kemang"
               />
             </label>
@@ -800,7 +629,6 @@ export function MerchantDashboard({
                   name="area"
                   minLength={2}
                   maxLength={80}
-                  defaultValue={merchant?.data.area}
                   placeholder="Kemang"
                 />
               </label>
@@ -813,7 +641,7 @@ export function MerchantDashboard({
                   min={1000}
                   max={10000000}
                   step={1000}
-                  defaultValue={merchant?.data.price ?? 100000}
+                  defaultValue={100000}
                 />
               </label>
             </div>
@@ -822,19 +650,7 @@ export function MerchantDashboard({
               <input
                 required
                 name="units"
-                defaultValue={merchant?.data.units.join(', ')}
                 placeholder="Lapangan A, Lapangan B"
-              />
-            </label>
-            <label>
-              NIB usaha (13 digit)
-              <input
-                required
-                name="nib"
-                inputMode="numeric"
-                pattern="[0-9]{13}"
-                defaultValue={merchant?.data.nib}
-                placeholder="Nomor induk berusaha"
               />
             </label>
             <label>
@@ -844,14 +660,12 @@ export function MerchantDashboard({
                 minLength={20}
                 maxLength={1000}
                 name="description"
-                defaultValue={merchant?.data.description}
                 placeholder="Ceritakan fasilitas dan pengalaman di tempatmu..."
               />
             </label>
             <p className="fine-print">
               Jam operasional awal 08.00–22.00 WIB, slot 60 menit. Foto
-              sementara menggunakan ilustrasi katalog. Unggah dokumen dan
-              pengaturan jam khusus belum tersedia.
+              sementara menggunakan ilustrasi sesuai kategori.
             </p>
             {error && (
               <p role="alert" className="error-message">
@@ -863,7 +677,7 @@ export function MerchantDashboard({
                 <Loader2 className="spin" size={17} />
               ) : (
                 <>
-                  Ajukan verifikasi <ArrowUpRight size={17} />
+                  Tambahkan tempat <ArrowUpRight size={17} />
                 </>
               )}
             </button>

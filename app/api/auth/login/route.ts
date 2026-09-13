@@ -3,16 +3,25 @@ import { createSession, sessionCookie } from '@/lib/auth';
 import { verifyPassword } from '@/lib/password';
 
 const invalid = () =>
-  Response.json({ error: 'Email/username atau password tidak sesuai.' }, { status: 401 });
+  Response.json(
+    { error: 'Email/username atau password tidak sesuai.' },
+    { status: 401 },
+  );
 
 export async function POST(request: Request) {
   try {
     if (Number(request.headers.get('content-length') ?? 0) > 8000)
       return Response.json({ error: 'Data terlalu besar.' }, { status: 413 });
     const body = (await request.json()) as Record<string, unknown>;
-    const identity = typeof body.identity === 'string' ? body.identity.trim() : '';
+    const identity =
+      typeof body.identity === 'string' ? body.identity.trim() : '';
     const password = typeof body.password === 'string' ? body.password : '';
-    if (!identity || identity.length > 254 || !password || password.length > 128)
+    if (
+      !identity ||
+      identity.length > 254 ||
+      !password ||
+      password.length > 128
+    )
       return invalid();
 
     const db = database();

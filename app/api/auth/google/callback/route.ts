@@ -22,9 +22,18 @@ function clearOauthCookie(name: string, secure: boolean) {
 }
 
 function signInError(origin: string, code: string, secure = false) {
-  const response = Response.redirect(new URL(`/signin?error=${code}`, origin), 302);
-  response.headers.append('Set-Cookie', clearOauthCookie('slotly_google_state', secure));
-  response.headers.append('Set-Cookie', clearOauthCookie('slotly_google_verifier', secure));
+  const response = Response.redirect(
+    new URL(`/signin?error=${code}`, origin),
+    302,
+  );
+  response.headers.append(
+    'Set-Cookie',
+    clearOauthCookie('slotly_google_state', secure),
+  );
+  response.headers.append(
+    'Set-Cookie',
+    clearOauthCookie('slotly_google_verifier', secure),
+  );
   return response;
 }
 
@@ -63,9 +72,12 @@ export async function GET(request: Request) {
     const token = (await tokenResponse.json()) as { access_token?: string };
     if (!token.access_token) throw new Error('Missing access token');
 
-    const profileResponse = await fetch('https://openidconnect.googleapis.com/v1/userinfo', {
-      headers: { Authorization: `Bearer ${token.access_token}` },
-    });
+    const profileResponse = await fetch(
+      'https://openidconnect.googleapis.com/v1/userinfo',
+      {
+        headers: { Authorization: `Bearer ${token.access_token}` },
+      },
+    );
     if (!profileResponse.ok) throw new Error('Profile request failed');
     const profile = (await profileResponse.json()) as GoogleProfile;
     if (!profile.sub || !profile.email || !profile.email_verified)
@@ -82,11 +94,17 @@ export async function GET(request: Request) {
     let userId = linked?.user_id;
 
     if (!userId) {
-      const existing = await db.prepare('SELECT id FROM users WHERE email=?').bind(email).first<{ id: string }>();
+      const existing = await db
+        .prepare('SELECT id FROM users WHERE email=?')
+        .bind(email)
+        .first<{ id: string }>();
       userId = existing?.id;
-      if (!userId) return signInError(origin, 'google_account_not_found', secure);
+      if (!userId)
+        return signInError(origin, 'google_account_not_found', secure);
       await db
-        .prepare("INSERT OR IGNORE INTO oauth_accounts(provider,provider_user_id,user_id,created_at) VALUES('google',?,?,?)")
+        .prepare(
+          "INSERT OR IGNORE INTO oauth_accounts(provider,provider_user_id,user_id,created_at) VALUES('google',?,?,?)",
+        )
         .bind(profile.sub, userId, Math.floor(Date.now() / 1000))
         .run();
     }
@@ -94,11 +112,20 @@ export async function GET(request: Request) {
     const session = await createSession(db, userId);
     const response = Response.redirect(new URL('/dashboard', origin), 302);
     response.headers.append('Set-Cookie', sessionCookie(session, secure));
-    response.headers.append('Set-Cookie', clearOauthCookie('slotly_google_state', secure));
-    response.headers.append('Set-Cookie', clearOauthCookie('slotly_google_verifier', secure));
+    response.headers.append(
+      'Set-Cookie',
+      clearOauthCookie('slotly_google_state', secure),
+    );
+    response.headers.append(
+      'Set-Cookie',
+      clearOauthCookie('slotly_google_verifier', secure),
+    );
     return response;
   } catch (error) {
-    console.error('Google sign-in failed', error instanceof Error ? error.message : 'Unknown error');
+    console.error(
+      'Google sign-in failed',
+      error instanceof Error ? error.message : 'Unknown error',
+    );
     return signInError(origin, 'google_failed', secure);
   }
 }

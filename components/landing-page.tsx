@@ -11,7 +11,6 @@ import {
   ShieldCheck,
   Sparkles,
   Star,
-  Store,
   Users,
 } from 'lucide-react';
 import styles from './landing-page.module.css';
@@ -77,11 +76,12 @@ export default function LandingPage() {
         <nav className={styles.nav} aria-label="Navigasi utama">
           <a href="#pilihan">Tempat pilihan</a>
           <a href="#cara-kerja">Cara kerja</a>
-          <a href="#partner">Untuk merchant</a>
         </nav>
 
         <div className={styles.headerActions}>
-          <Link className={styles.signIn} href="/signin">Masuk</Link>
+          <Link className={styles.signIn} href="/signin">
+            Masuk
+          </Link>
           <Link className={styles.headerCta} href="/signin">
             Jelajahi tempat <ArrowRight size={16} />
           </Link>
@@ -114,26 +114,54 @@ export default function LandingPage() {
             </div>
             <div className={styles.proof}>
               <span className={styles.avatars} aria-hidden="true">
-                <i>A</i><i>D</i><i>S</i><i>R</i>
+                <i>A</i>
+                <i>D</i>
+                <i>S</i>
+                <i>R</i>
               </span>
               <span>
-                <strong><Star size={13} fill="currentColor" /> 4.9</strong>
+                <strong>
+                  <Star size={13} fill="currentColor" /> 4.9
+                </strong>
                 <small>Dipercaya pencari waktu berkualitas</small>
               </span>
             </div>
           </div>
 
-          <div className={styles.imageFan} aria-label="Pilihan pengalaman di Slotly">
+          <div
+            className={styles.imageFan}
+            aria-label="Pilihan pengalaman di Slotly"
+          >
             <figure className={`${styles.fanCard} ${styles.leftCard}`}>
-              <Image src="/images/salon.jpg" alt="Interior salon pilihan Slotly" fill sizes="280px" priority />
+              <Image
+                src="/images/salon.jpg"
+                alt="Interior salon pilihan Slotly"
+                fill
+                sizes="280px"
+                priority
+              />
               <figcaption>Me-time favorit</figcaption>
             </figure>
             <figure className={`${styles.fanCard} ${styles.centerCard}`}>
-              <Image src="/images/padel.jpg" alt="Lapangan padel pilihan Slotly" fill sizes="340px" priority />
-              <figcaption><MapPin size={14} /> Kemang, Jakarta Selatan</figcaption>
+              <Image
+                src="/images/padel.jpg"
+                alt="Lapangan padel pilihan Slotly"
+                fill
+                sizes="340px"
+                priority
+              />
+              <figcaption>
+                <MapPin size={14} /> Kemang, Jakarta Selatan
+              </figcaption>
             </figure>
             <figure className={`${styles.fanCard} ${styles.rightCard}`}>
-              <Image src="/images/music.jpg" alt="Studio musik pilihan Slotly" fill sizes="280px" priority />
+              <Image
+                src="/images/music.jpg"
+                alt="Studio musik pilihan Slotly"
+                fill
+                sizes="280px"
+                priority
+              />
               <figcaption>Ruang untuk berkarya</figcaption>
             </figure>
             <span className={styles.availableBadge}>
@@ -143,10 +171,18 @@ export default function LandingPage() {
         </section>
 
         <section className={styles.trustBar} aria-label="Keunggulan Slotly">
-          <span><BadgeCheck size={18} /> Venue terkurasi</span>
-          <span><Clock3 size={18} /> Jadwal real-time</span>
-          <span><ShieldCheck size={18} /> Reservasi lebih pasti</span>
-          <span><Users size={18} /> Untuk setiap rencana</span>
+          <span>
+            <BadgeCheck size={18} /> Venue terkurasi
+          </span>
+          <span>
+            <Clock3 size={18} /> Jadwal real-time
+          </span>
+          <span>
+            <ShieldCheck size={18} /> Reservasi lebih pasti
+          </span>
+          <span>
+            <Users size={18} /> Untuk setiap rencana
+          </span>
         </section>
 
         <section className={styles.venueSection} id="pilihan">
@@ -163,18 +199,33 @@ export default function LandingPage() {
 
           <div className={styles.venueGrid}>
             {venues.map((venue) => (
-              <Link href="/signin" className={styles.venueCard} key={venue.name}>
+              <Link
+                href="/signin"
+                className={styles.venueCard}
+                key={venue.name}
+              >
                 <div className={styles.venueImage}>
-                  <Image src={venue.image} alt={venue.name} fill sizes="(max-width: 760px) 100vw, 33vw" />
+                  <Image
+                    src={venue.image}
+                    alt={venue.name}
+                    fill
+                    sizes="(max-width: 760px) 100vw, 33vw"
+                  />
                   <span className={styles.category}>{venue.category}</span>
-                  <span className={styles.rating}><Star size={13} fill="currentColor" /> {venue.rating}</span>
+                  <span className={styles.rating}>
+                    <Star size={13} fill="currentColor" /> {venue.rating}
+                  </span>
                 </div>
                 <div className={styles.venueInfo}>
                   <div>
                     <h3>{venue.name}</h3>
-                    <p><MapPin size={14} /> {venue.area}, Jakarta Selatan</p>
+                    <p>
+                      <MapPin size={14} /> {venue.area}, Jakarta Selatan
+                    </p>
                   </div>
-                  <span>Mulai <strong>{venue.price}</strong> / jam</span>
+                  <span>
+                    Mulai <strong>{venue.price}</strong> / jam
+                  </span>
                 </div>
               </Link>
             ))}
@@ -185,7 +236,10 @@ export default function LandingPage() {
           <div className={styles.howIntro}>
             <span className={styles.kicker}>SEMUDAH ITU</span>
             <h2>Rencana seru dimulai dari satu slot.</h2>
-            <p>Tiga langkah sederhana untuk mengubah waktu luang menjadi momen yang berarti.</p>
+            <p>
+              Tiga langkah sederhana untuk mengubah waktu luang menjadi momen
+              yang berarti.
+            </p>
             <Link className={styles.primaryCta} href="/signin">
               Mulai jelajahi <ArrowRight size={18} />
             </Link>
@@ -193,35 +247,14 @@ export default function LandingPage() {
           <div className={styles.steps}>
             {steps.map(({ icon: Icon, number, title, text }) => (
               <article className={styles.step} key={number}>
-                <span className={styles.stepIcon}><Icon size={22} /></span>
+                <span className={styles.stepIcon}>
+                  <Icon size={22} />
+                </span>
                 <span className={styles.stepNumber}>{number}</span>
                 <h3>{title}</h3>
                 <p>{text}</p>
               </article>
             ))}
-          </div>
-        </section>
-
-        <section className={styles.partnerSection} id="partner">
-          <div className={styles.partnerVisual}>
-            <Image src="/images/badminton.jpg" alt="Venue partner Slotly" fill sizes="480px" />
-            <span><Store size={18} /> Partner bertumbuh bersama Slotly</span>
-          </div>
-          <div className={styles.partnerCopy}>
-            <span className={styles.kicker}>RUANG USAHA</span>
-            <h2>Punya tempat usaha? Biar setiap slot lebih berarti.</h2>
-            <p>
-              Atur jadwal, terima reservasi, dan jangkau lebih banyak pelanggan
-              dalam satu dashboard yang sederhana.
-            </p>
-            <ul>
-              <li><BadgeCheck size={18} /> Kelola ketersediaan dengan mudah</li>
-              <li><BadgeCheck size={18} /> Pantau booking dalam satu tempat</li>
-              <li><BadgeCheck size={18} /> Hadir di depan pelanggan yang tepat</li>
-            </ul>
-            <Link className={styles.partnerCta} href="/dashboard?view=Dashboard%20Merchant">
-              Jadi partner Slotly <ArrowRight size={18} />
-            </Link>
           </div>
         </section>
       </main>
@@ -232,7 +265,6 @@ export default function LandingPage() {
         navLinks={[
           { label: 'Tempat pilihan', href: '#pilihan' },
           { label: 'Cara kerja', href: '#cara-kerja' },
-          { label: 'Untuk merchant', href: '#partner' },
           { label: 'Masuk', href: '/signin' },
         ]}
         copyrightText="Seluruh hak cipta dilindungi."

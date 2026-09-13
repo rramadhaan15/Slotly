@@ -5,7 +5,8 @@ import SignInPage from '@/components/sign-in-page';
 const errors: Record<string, string> = {
   google_not_configured: 'Login Gmail belum dikonfigurasi oleh administrator.',
   google_cancelled: 'Proses masuk dengan Gmail dibatalkan atau kedaluwarsa.',
-  google_account_not_found: 'Akun dengan email tersebut belum tersedia. Silakan daftar terlebih dahulu.',
+  google_account_not_found:
+    'Akun dengan email tersebut belum tersedia. Silakan daftar terlebih dahulu.',
   google_failed: 'Login Gmail belum berhasil. Silakan coba kembali.',
 };
 

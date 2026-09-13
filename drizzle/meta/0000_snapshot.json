@@ -46,9 +46,7 @@
       "indexes": {
         "audit_user_idx": {
           "name": "audit_user_idx",
-          "columns": [
-            "user_id"
-          ],
+          "columns": ["user_id"],
           "isUnique": false
         }
       },
@@ -149,16 +147,12 @@
       "indexes": {
         "booking_user_idx": {
           "name": "booking_user_idx",
-          "columns": [
-            "user_id"
-          ],
+          "columns": ["user_id"],
           "isUnique": false
         },
         "booking_venue_idx": {
           "name": "booking_venue_idx",
-          "columns": [
-            "venue_id"
-          ],
+          "columns": ["venue_id"],
           "isUnique": false
         }
       },
@@ -237,12 +231,7 @@
       "indexes": {
         "unique_venue_slot": {
           "name": "unique_venue_slot",
-          "columns": [
-            "venue_id",
-            "unit",
-            "date",
-            "hour"
-          ],
+          "columns": ["venue_id", "unit", "date", "hour"],
           "isUnique": true
         }
       },
@@ -279,9 +268,7 @@
       "indexes": {
         "favorite_user_idx": {
           "name": "favorite_user_idx",
-          "columns": [
-            "user_id"
-          ],
+          "columns": ["user_id"],
           "isUnique": false
         }
       },
@@ -333,9 +320,7 @@
       "indexes": {
         "merchant_owner_idx": {
           "name": "merchant_owner_idx",
-          "columns": [
-            "user_id"
-          ],
+          "columns": ["user_id"],
           "isUnique": true
         }
       },
@@ -400,9 +385,7 @@
       "indexes": {
         "review_booking_idx": {
           "name": "review_booking_idx",
-          "columns": [
-            "booking_id"
-          ],
+          "columns": ["booking_id"],
           "isUnique": true
         }
       },

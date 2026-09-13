@@ -126,18 +126,12 @@ export function InfoDialog({
             <p className="fine-print">
               Akun Slotly menggunakan email dan password yang terenkripsi.
             </p>
-            <button
-              className="outline"
-              onClick={() => void signOut()}
-            >
+            <button className="outline" onClick={() => void signOut()}>
               Keluar dari akun
             </button>
           </>
         ) : (
-          <Link
-            className="primary"
-            href="/signin"
-          >
+          <Link className="primary" href="/signin">
             Masuk dengan email <ArrowUpRight size={17} />
           </Link>
         )}
