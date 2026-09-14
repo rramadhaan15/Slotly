@@ -92,9 +92,6 @@ export default function LandingPage() {
         <section className={styles.hero}>
           <div className={styles.heroGlow} />
           <div className={styles.heroCopy}>
-            <span className={styles.pill}>
-              <Sparkles size={14} /> Sedikit jeda, banyak cerita
-            </span>
             <h1>
               Waktu luang, jadi
               <br />
