@@ -19,8 +19,8 @@ export function SlotlyLogo({
         className={styles.image}
         src="/images/slotly-logo.png"
         alt="Slotly"
-        width={1881}
-        height={837}
+        width={1920}
+        height={850}
         priority={priority}
       />
     </span>

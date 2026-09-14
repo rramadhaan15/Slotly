@@ -2,7 +2,7 @@
   position: relative;
   display: inline-block;
   width: 132px;
-  aspect-ratio: 3.18 / 1;
+  aspect-ratio: 3.3 / 1;
   flex: none;
   overflow: hidden;
   border-radius: 8px;
@@ -13,8 +13,8 @@
 .image {
   position: absolute;
   left: 50%;
-  top: 50%;
-  width: 128%;
+  top: 49%;
+  width: 160%;
   height: auto;
   max-width: none;
   transform: translate(-50%, -50%);
