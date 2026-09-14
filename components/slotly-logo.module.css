@@ -21,7 +21,14 @@
 }
 
 .framed {
-  box-shadow:
-    0 0 0 1px rgba(255, 255, 255, 0.42),
-    0 6px 20px rgba(19, 42, 30, 0.12);
+  background: transparent;
+  border-radius: 0;
+}
+
+.framed .image {
+  width: 130%;
+  filter:
+    brightness(1.38) saturate(1.08)
+    drop-shadow(0 0 2px rgba(255, 255, 255, 0.74))
+    drop-shadow(0 5px 12px rgba(8, 34, 21, 0.28));
 }

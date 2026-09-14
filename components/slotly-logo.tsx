@@ -17,10 +17,14 @@ export function SlotlyLogo({
     <span className={cn(styles.logo, framed && styles.framed, className)}>
       <Image
         className={styles.image}
-        src="/images/slotly-logo.png"
+        src={
+          framed
+            ? '/images/slotly-logo-transparent.png'
+            : '/images/slotly-logo.png'
+        }
         alt="Slotly"
-        width={1920}
-        height={850}
+        width={framed ? 1922 : 1920}
+        height={framed ? 818 : 850}
         priority={priority}
       />
     </span>
