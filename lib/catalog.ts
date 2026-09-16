@@ -22,6 +22,13 @@ export const categories = [
   'Hiburan',
   'Kesehatan',
 ];
+export const jakartaCities = [
+  'Jakarta Selatan',
+  'Jakarta Timur',
+  'Jakarta Barat',
+  'Jakarta Pusat',
+  'Jakarta Utara',
+];
 export const venues: Venue[] = [
   {
     id: 'padel',
@@ -124,6 +131,74 @@ export const venues: Venue[] = [
       'Temukan ritmemu di studio kedap suara dengan peralatan musik lengkap. Cocok untuk latihan band dan eksplorasi musik.',
     facilities: ['AC', 'Drum kit', 'Amplifier', 'Sound system'],
     units: ['Studio A', 'Studio B'],
+  },
+  {
+    id: 'padel-rawamangun',
+    name: 'Rawamangun Padel Arena',
+    category: 'Olahraga',
+    area: 'Rawamangun',
+    city: 'Jakarta Timur',
+    distance: 11.8,
+    price: 140000,
+    rating: 4.8,
+    reviews: 73,
+    image: '/images/padel.jpg',
+    tag: 'Favorit komunitas',
+    description:
+      'Lapangan padel modern untuk latihan santai maupun pertandingan komunitas, lengkap dengan area tunggu yang nyaman.',
+    facilities: ['Parkir', 'Ruang ganti', 'Kafe', 'Sewa raket'],
+    units: ['Court 1', 'Court 2'],
+  },
+  {
+    id: 'studio-cideng',
+    name: 'Sorot Studio',
+    category: 'Studio',
+    area: 'Cideng',
+    city: 'Jakarta Pusat',
+    distance: 9.6,
+    price: 175000,
+    rating: 4.7,
+    reviews: 48,
+    image: '/images/studio.jpg',
+    tag: '',
+    description:
+      'Studio foto praktis di pusat kota dengan pencahayaan dan backdrop untuk kebutuhan personal maupun bisnis.',
+    facilities: ['Lighting', 'AC', 'Wi-Fi', 'Ruang makeup'],
+    units: ['Studio Utama', 'Studio Mini'],
+  },
+  {
+    id: 'music-kebon-jeruk',
+    name: 'Nada Barat Studio',
+    category: 'Studio',
+    area: 'Kebon Jeruk',
+    city: 'Jakarta Barat',
+    distance: 12.4,
+    price: 95000,
+    rating: 4.8,
+    reviews: 67,
+    image: '/images/music.jpg',
+    tag: 'Harga bersahabat',
+    description:
+      'Studio latihan musik kedap suara dengan perlengkapan lengkap untuk band dan musisi dari berbagai level.',
+    facilities: ['AC', 'Drum kit', 'Amplifier', 'Sound system'],
+    units: ['Studio 1', 'Studio 2'],
+  },
+  {
+    id: 'salon-kelapa-gading',
+    name: 'Luma Beauty Studio',
+    category: 'Salon & Kecantikan',
+    area: 'Kelapa Gading',
+    city: 'Jakarta Utara',
+    distance: 17.2,
+    price: 110000,
+    rating: 4.9,
+    reviews: 91,
+    image: '/images/salon.jpg',
+    tag: 'Pilihan Slotly',
+    description:
+      'Perawatan rambut dan kecantikan dalam studio yang tenang, cerah, dan mudah dijangkau dari Kelapa Gading.',
+    facilities: ['AC', 'Wi-Fi', 'Private room', 'Parkir'],
+    units: ['Hair treatment', 'Nail care'],
   },
 ];
 export const money = (value: number) =>

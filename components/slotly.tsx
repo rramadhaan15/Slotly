@@ -31,7 +31,14 @@ import {
   SidebarHeader,
   SidebarTrigger,
 } from '@/components/ui/sidebar';
-import { venues, categories, money, today, type Venue } from '@/lib/catalog';
+import {
+  venues,
+  categories,
+  jakartaCities,
+  money,
+  today,
+  type Venue,
+} from '@/lib/catalog';
 import {
   Dialog,
   DialogContent,
@@ -85,7 +92,7 @@ export default function Slotly() {
   const [error, setError] = useState('');
   const [selected, setSelected] = useState<Venue | null>(null);
   const [date, setDate] = useState('');
-  const [area, setArea] = useState('all');
+  const [location, setLocation] = useState('all');
   const [sort, setSort] = useState('recommended');
   const [filterOpen, setFilterOpen] = useState(false);
   const [maxPrice, setMaxPrice] = useState('all');
@@ -130,7 +137,7 @@ export default function Slotly() {
   const reset = () => {
     setCategory('Semua');
     setSearch('');
-    setArea('all');
+    setLocation('all');
     setMaxPrice('all');
     setMinRating('all');
     setMaxDistance('all');
@@ -169,10 +176,10 @@ export default function Slotly() {
       (v) =>
         (page !== 'Favorit' || data.favorites.includes(v.id)) &&
         (category === 'Semua' || v.category === category) &&
-        (v.name + ' ' + v.area + ' ' + v.category)
+        (v.name + ' ' + v.area + ' ' + v.city + ' ' + v.category)
           .toLowerCase()
           .includes(search.toLowerCase()) &&
-        (area === 'all' || v.area === area) &&
+        (location === 'all' || v.city === location) &&
         (maxPrice === 'all' || v.price <= Number(maxPrice)) &&
         (minRating === 'all' || v.rating >= Number(minRating)) &&
         (maxDistance === 'all' || v.distance <= Number(maxDistance)),
@@ -187,6 +194,10 @@ export default function Slotly() {
             : 0,
     );
   const initials = data.user?.name[0]?.toUpperCase() ?? 'S';
+  const availableCities = jakartaCities.filter((city) =>
+    data.venues.some((venue) => venue.city === city),
+  );
+  const locationLabel = location === 'all' ? 'Seluruh Jakarta' : location;
   useEffect(() => {
     type Tool = {
       name: string;
@@ -307,7 +318,7 @@ export default function Slotly() {
           </div>
           <div className="top-actions">
             <button className="location" onClick={() => setInfo('Lokasi')}>
-              <MapPin size={17} /> Jakarta Selatan <ChevronDown size={14} />
+              <MapPin size={17} /> {locationLabel} <ChevronDown size={14} />
             </button>
             <span className="top-divider" />
             <button
@@ -428,13 +439,14 @@ export default function Slotly() {
                     <small>LOKASI</small>
                     <Choice
                       label="Area pencarian"
-                      value={area}
-                      onChange={setArea}
+                      value={location}
+                      onChange={setLocation}
                       options={[
-                        { value: 'all', label: 'Jakarta Selatan' },
-                        ...Array.from(
-                          new Set(data.venues.map((v) => v.area)),
-                        ).map((a) => ({ value: a, label: a })),
+                        { value: 'all', label: 'Seluruh Jakarta' },
+                        ...availableCities.map((city) => ({
+                          value: city,
+                          label: city,
+                        })),
                       ]}
                     />
                   </span>
@@ -674,7 +686,7 @@ export default function Slotly() {
             />
           </label>
           <label className="field-label">
-            Radius dari Kemang
+            Radius perkiraan
             <Choice
               label="Radius pencarian"
               value={maxDistance}
@@ -687,7 +699,7 @@ export default function Slotly() {
             />
           </label>
           <p className="fine-print">
-            Jarak adalah data contoh dari Kemang, bukan lokasi GPS perangkat.
+            Jarak merupakan data perkiraan, bukan lokasi GPS perangkat.
           </p>
           <div className="dialog-actions">
             <button className="outline" onClick={reset}>
@@ -704,10 +716,10 @@ export default function Slotly() {
         setInfo={setInfo}
         user={data.user}
         notifications={data.notifications}
-        areas={Array.from(new Set(data.venues.map((v) => v.area)))}
-        area={area}
-        onArea={(v) => {
-          setArea(v);
+        cities={availableCities}
+        location={location}
+        onLocation={(v) => {
+          setLocation(v);
           setInfo('');
           navigate('Jelajahi');
         }}

@@ -13,17 +13,17 @@ export function InfoDialog({
   setInfo,
   user,
   notifications,
-  areas,
-  area,
-  onArea,
+  cities,
+  location,
+  onLocation,
 }: {
   info: string;
   setInfo: (s: string) => void;
   user: { name: string; email: string } | null;
   notifications: Notification[];
-  areas: string[];
-  area: string;
-  onArea: (a: string) => void;
+  cities: string[];
+  location: string;
+  onLocation: (location: string) => void;
 }) {
   async function signOut() {
     await fetch('/api/auth/logout', { method: 'POST' });
@@ -48,7 +48,7 @@ export function InfoDialog({
           {info === 'Notifikasi'
             ? 'Konfirmasi dan perubahan reservasimu.'
             : info === 'Lokasi'
-              ? 'Slotly dimulai dari tempat-tempat pilihan di Jakarta Selatan.'
+              ? 'Temukan tempat pilihan di berbagai wilayah Jakarta.'
               : info === 'Bantuan'
                 ? 'Panduan singkat untuk pengalaman reservasi yang nyaman.'
                 : 'Masuk untuk menyimpan favorit dan mengelola reservasi.'}
@@ -104,16 +104,16 @@ export function InfoDialog({
         ) : info === 'Lokasi' ? (
           <>
             <Choice
-              label="Pilih area"
-              value={area}
-              onChange={onArea}
+              label="Pilih wilayah"
+              value={location}
+              onChange={onLocation}
               options={[
-                { value: 'all', label: 'Seluruh Jakarta Selatan' },
-                ...areas.map((a) => ({ value: a, label: a })),
+                { value: 'all', label: 'Seluruh Jakarta' },
+                ...cities.map((city) => ({ value: city, label: city })),
               ]}
             />
             <p className="fine-print">
-              Area lain tersedia setelah mitra baru terverifikasi.
+              Pilihan wilayah mengikuti lokasi venue yang tersedia.
             </p>
           </>
         ) : user ? (

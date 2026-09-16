@@ -43,6 +43,7 @@ import { api, Choice, type Booking } from './shared';
 import {
   venues,
   categories,
+  jakartaCities,
   money,
   dateLabel,
   today,
@@ -331,6 +332,7 @@ export function AdminDashboard({
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const [cat, setCat] = useState('Olahraga');
+  const [city, setCity] = useState('Jakarta Selatan');
   const [feedback, setFeedback] = useState('');
   const [fee, setFee] = useState(commission);
   const run = async (payload: Record<string, unknown>) => {
@@ -359,6 +361,7 @@ export function AdminDashboard({
         category: cat,
         price: Number(f.get('price')),
         area: f.get('area'),
+        city,
         description: f.get('description'),
         units: (f.get('units') as string)
           .split(',')
@@ -550,8 +553,8 @@ export function AdminDashboard({
               <div>
                 <h3>{m.data.name}</h3>
                 <p>
-                  {m.data.category} · {m.data.area} · {m.data.units.length} unit
-                  · {money(m.data.price)}/jam
+                  {m.data.category} · {m.data.area}, {m.data.city} ·{' '}
+                  {m.data.units.length} unit · {money(m.data.price)}/jam
                 </p>
                 <span className="status approved">Aktif</span>
               </div>
@@ -632,7 +635,19 @@ export function AdminDashboard({
             </label>
             <div className="booking-fields">
               <label>
-                Area (Jakarta Selatan)
+                Wilayah
+                <Choice
+                  label="Wilayah Jakarta"
+                  value={city}
+                  onChange={setCity}
+                  options={jakartaCities.map((value) => ({
+                    value,
+                    label: value,
+                  }))}
+                />
+              </label>
+              <label>
+                Area / kecamatan
                 <input
                   required
                   name="area"

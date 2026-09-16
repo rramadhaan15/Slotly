@@ -102,7 +102,7 @@ export default function SignInPage({
           </div>
           <div className={styles.locationCard}>
             <span>
-              <MapPin size={15} /> Jakarta Selatan
+              <MapPin size={15} /> Seluruh Jakarta
             </span>
             <strong>
               <Star size={14} fill="currentColor" /> 4.9 pilihan komunitas

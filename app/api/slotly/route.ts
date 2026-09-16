@@ -1,6 +1,6 @@
 import { getSlotlyUser } from '@/lib/auth';
 import { database, adminIds } from '@/lib/db';
-import { venues, categories, type Venue } from '@/lib/catalog';
+import { venues, categories, jakartaCities, type Venue } from '@/lib/catalog';
 import {
   HOLD_RANGE_SQL,
   HOLD_SECONDS,
@@ -590,6 +590,8 @@ export async function POST(request: Request) {
         typeof body.area !== 'string' ||
         body.area.trim().length < 2 ||
         body.area.length > 80 ||
+        typeof body.city !== 'string' ||
+        !jakartaCities.includes(body.city) ||
         typeof body.description !== 'string' ||
         body.description.length < 20 ||
         body.description.length > 1000 ||
@@ -609,7 +611,7 @@ export async function POST(request: Request) {
         category: body.category,
         price: body.price,
         area: body.area.trim(),
-        city: 'Jakarta Selatan',
+        city: body.city,
         description: body.description,
         units: body.units,
         image:
