@@ -1,7 +1,7 @@
 'use client';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -54,6 +54,19 @@ export function BookingFlow({
   const [payment, setPayment] = useState('full');
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
+  const isRangeAvailable = useCallback(
+    (startHour: number) => {
+      if (loading || !validSlotRange(date, startHour, duration)) return false;
+      return !Array.from({ length: duration }, (_, i) => startHour + i).some(
+        (rangeHour) =>
+          slots.some((s) => s.unit === unit && s.hour === rangeHour),
+      );
+    },
+    [date, duration, loading, slots, unit],
+  );
+  const selectedRangeAvailable = hour !== null && isRangeAvailable(hour);
+  const selectedRangeUnavailable =
+    hour !== null && !loading && !selectedRangeAvailable;
   useEffect(() => {
     let active = true;
     let pending = false;
@@ -113,6 +126,13 @@ export function BookingFlow({
     onClose();
   };
   const reserve = async () => {
+    if (!selectedRangeAvailable) {
+      setHour(null);
+      setError(
+        'Rentang waktu yang dipilih tidak tersedia. Silakan pilih waktu mulai lain.',
+      );
+      return;
+    }
     setBusy(true);
     setError('');
     try {
@@ -262,33 +282,33 @@ export function BookingFlow({
               </div>
               <div className="slot-grid">
                 {Array.from({ length: 14 }, (_, i) => i + 8).map((h) => {
-                  const range = Array.from(
-                    { length: duration },
-                    (_, i) => h + i,
-                  );
-                  const disabled =
-                    loading ||
-                    !validSlotRange(date, h, duration) ||
-                    range.some((rangeHour) =>
-                      slots.some(
-                        (s) => s.unit === unit && s.hour === rangeHour,
-                      ),
-                    );
+                  const durationFits = validSlotRange(date, h, duration);
+                  const disabled = !isRangeAvailable(h);
                   return (
                     <button
                       key={h}
                       disabled={disabled}
                       onClick={() => setHour(h)}
-                      aria-pressed={hour === h}
-                      className={hour === h ? 'chosen' : ''}
+                      aria-pressed={hour === h && selectedRangeAvailable}
+                      className={
+                        hour === h && selectedRangeAvailable ? 'chosen' : ''
+                      }
                     >
                       {String(h).padStart(2, '0')}.00
-                      {disabled && <small>Tidak tersedia</small>}
+                      {disabled && (
+                        <small>
+                          {loading
+                            ? 'Memuat…'
+                            : durationFits
+                              ? 'Tidak tersedia'
+                              : 'Durasi tidak muat'}
+                        </small>
+                      )}
                     </button>
                   );
                 })}
               </div>
-              {hour !== null && (
+              {hour !== null && selectedRangeAvailable && (
                 <p className="selected-range">
                   <Clock size={14} /> Rentang dipilih:{' '}
                   <strong>
@@ -306,6 +326,12 @@ export function BookingFlow({
                   {error}
                 </p>
               )}
+              {selectedRangeUnavailable && (
+                <p role="alert" className="error-message">
+                  Rentang waktu yang dipilih sudah tidak tersedia. Silakan pilih
+                  waktu mulai lain.
+                </p>
+              )}
               <div className="detail-bottom">
                 <div>
                   <small>Total {duration} jam</small>
@@ -315,7 +341,7 @@ export function BookingFlow({
                   <button
                     className="primary"
                     onClick={reserve}
-                    disabled={hour === null || busy || loading}
+                    disabled={!selectedRangeAvailable || busy}
                   >
                     {busy ? (
                       <Loader2 className="spin" size={17} />
