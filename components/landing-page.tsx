@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import styles from './landing-page.module.css';
 import { SlotlyLogo } from './slotly-logo';
+import HeroShutterText from './ui/hero-shutter-text';
 import { Footer } from './ui/modem-animated-footer';
 
 const venues = [
@@ -92,10 +93,8 @@ export default function LandingPage() {
         <section className={styles.hero}>
           <div className={styles.heroGlow} />
           <div className={styles.heroCopy}>
-            <h1>
-              Waktu luang, jadi
-              <br />
-              <span>pengalaman.</span>
+            <h1 aria-label="Waktu luang, jadi pengalaman.">
+              <HeroShutterText text={'Waktu luang, jadi\npengalaman.'} />
             </h1>
             <p>
               Temukan lapangan, salon, studio, dan tempat favorit di sekitarmu.

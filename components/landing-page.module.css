@@ -132,16 +132,14 @@
 }
 
 .hero h1 {
+  --shutter-ink: var(--landing-ink);
+  --shutter-accent: var(--landing-green);
   margin: 0 0 19px;
   font-family: Georgia, 'Times New Roman', serif;
   font-size: clamp(54px, 5.6vw, 78px);
   line-height: 0.99;
   font-weight: 500;
   letter-spacing: -4.2px;
-}
-.hero h1 span {
-  color: var(--landing-green);
-  font-style: italic;
 }
 .heroCopy > p {
   max-width: 550px;

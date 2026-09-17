@@ -1,0 +1,53 @@
+.root,
+.line {
+  display: block;
+}
+
+.line {
+  white-space: nowrap;
+}
+
+.accentLine {
+  color: var(--shutter-accent, #27794c);
+  font-style: italic;
+}
+
+.character {
+  position: relative;
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: bottom;
+}
+
+.mainCharacter,
+.slice {
+  display: block;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+}
+
+.slice {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.topSlice,
+.bottomSlice {
+  color: var(--shutter-accent, #27794c);
+}
+
+.topSlice {
+  clip-path: polygon(0 0, 100% 0, 100% 35%, 0 35%);
+}
+
+.middleSlice {
+  color: var(--shutter-ink, #173226);
+  clip-path: polygon(0 35%, 100% 35%, 100% 65%, 0 65%);
+}
+
+.bottomSlice {
+  clip-path: polygon(0 65%, 100% 65%, 100% 100%, 0 100%);
+}
