@@ -16,6 +16,8 @@
   position: relative;
   display: inline-block;
   overflow: hidden;
+  padding: 0.14em 0.16em;
+  margin: -0.14em -0.16em;
   vertical-align: bottom;
 }
 
