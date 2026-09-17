@@ -14,9 +14,9 @@ import {
   Users,
 } from 'lucide-react';
 import styles from './landing-page.module.css';
-import { SlotlyLogo } from './slotly-logo';
 import HeroShutterText from './ui/hero-shutter-text';
 import { Footer } from './ui/modem-animated-footer';
+import { SlotlyHeader } from './ui/slotly-header';
 
 const venues = [
   {
@@ -69,25 +69,7 @@ const steps = [
 export default function LandingPage() {
   return (
     <div className={styles.page}>
-      <header className={styles.header}>
-        <Link className={styles.brand} href="/" aria-label="Slotly beranda">
-          <SlotlyLogo className={styles.brandLogo} priority />
-        </Link>
-
-        <nav className={styles.nav} aria-label="Navigasi utama">
-          <a href="#pilihan">Tempat pilihan</a>
-          <a href="#cara-kerja">Cara kerja</a>
-        </nav>
-
-        <div className={styles.headerActions}>
-          <Link className={styles.signIn} href="/signin">
-            Masuk
-          </Link>
-          <Link className={styles.headerCta} href="/signin">
-            Jelajahi tempat <ArrowRight size={16} />
-          </Link>
-        </div>
-      </header>
+      <SlotlyHeader />
 
       <main>
         <section className={styles.hero}>
