@@ -14,7 +14,6 @@ import {
   CalendarDays,
   ShieldCheck,
   CircleHelp,
-  Sparkles,
   Star,
   Grid2X2,
   Dumbbell,
@@ -47,11 +46,8 @@ import {
 } from '@/components/ui/dialog';
 import { Choice, api, type Booking, type Notification } from './shared';
 import { BookingFlow } from './booking-flow';
-import {
-  BookingHistory,
-  AdminDashboard,
-  type ManagedVenue,
-} from './account-views';
+import { BookingHistory } from './account-views';
+import { AdminDashboard, type ManagedVenue } from './admin-dashboard';
 import { InfoDialog } from './info-dialog';
 import { SlotlyLogo } from './slotly-logo';
 type AppData = {
@@ -365,9 +361,6 @@ export default function Slotly() {
                 <section className="hero">
                   <div className="hero-photo" />
                   <div className="hero-content">
-                    <span className="hero-badge">
-                      <Sparkles size={14} /> WAKTUNYA COBA HAL BARU
-                    </span>
                     <h2>
                       Rencana seru dimulai
                       <br />
@@ -624,6 +617,7 @@ export default function Slotly() {
               managedVenues={data.managedVenues ?? []}
               transactions={data.transactions ?? []}
               commission={data.commission ?? 5}
+              allVenues={data.venues}
             />
           )}
           <footer className="page-footer">

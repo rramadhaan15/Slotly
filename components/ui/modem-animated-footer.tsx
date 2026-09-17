@@ -2,6 +2,7 @@
 
 import type { ReactNode } from 'react';
 import Link from 'next/link';
+import { ArrowUpRight, LogIn } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { SlotlyLogo } from '@/components/slotly-logo';
 
@@ -67,18 +68,35 @@ export function Footer({
 
               {navLinks.length > 0 && (
                 <nav
-                  className="flex max-w-full flex-wrap justify-center gap-x-6 gap-y-3 px-4 text-sm font-medium text-muted-foreground"
+                  className="mt-3 flex max-w-full flex-wrap justify-center gap-2 rounded-2xl border border-[#dce8df] bg-[#f4f8f3]/90 p-1.5 shadow-[0_8px_24px_rgba(31,62,46,0.06)]"
                   aria-label="Navigasi footer"
                 >
-                  {navLinks.map((link) => (
-                    <Link
-                      key={link.label}
-                      className="duration-300 hover:text-foreground"
-                      href={link.href}
-                    >
-                      {link.label}
-                    </Link>
-                  ))}
+                  {navLinks.map((link) => {
+                    const isSignIn = link.href === '/signin';
+
+                    return (
+                      <Link
+                        key={link.label}
+                        className={cn(
+                          'group inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border px-4 py-2 text-sm font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#27794c] focus-visible:ring-offset-2',
+                          isSignIn
+                            ? 'border-[#27794c] bg-[#27794c] !text-white shadow-[0_6px_16px_rgba(39,121,76,0.2)] hover:-translate-y-0.5 hover:bg-[#206b41] hover:shadow-[0_9px_20px_rgba(39,121,76,0.25)]'
+                            : 'border-[#d7e3da] bg-white text-[#40594c] shadow-sm hover:-translate-y-0.5 hover:border-[#9dbba6] hover:bg-[#fafff9] hover:text-[#206b41] hover:shadow-md',
+                        )}
+                        href={link.href}
+                      >
+                        {link.label}
+                        {isSignIn ? (
+                          <LogIn aria-hidden="true" className="size-4" />
+                        ) : (
+                          <ArrowUpRight
+                            aria-hidden="true"
+                            className="size-3.5 transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+                          />
+                        )}
+                      </Link>
+                    );
+                  })}
                 </nav>
               )}
             </div>
